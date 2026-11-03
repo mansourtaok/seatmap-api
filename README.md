@@ -48,6 +48,19 @@ Claude API for the AI designer.
 - **ticket_category**: a version's categories, with the layout's default prices.
 - **asset**: floor-plan images. They're write-once, because published versions show them.
 
+- **event**: sells one published version, with its own currency and status
+  (`DRAFT`, `ON_SALE`, `CLOSED`, `CANCELLED`).
+- **event_price**: the event's price per category. It starts at the version's defaults.
+- **reservation** / **reservation_item**: a basket, held for 10 minutes
+  (`seatmap.hold-duration`), then confirmed (sold) or released. Items keep the price
+  they were held at.
+- **event_seat**: one row per taken seat, so a seat can't be held or sold twice. An
+  expired hold is free, and the next hold takes it over. A job releases expired holds
+  every 30 seconds.
+
+Seats the designer marked `held` or `blocked`, and anything without a ticket category,
+are never sold. A hold is all or nothing.
+
 The server accepts schema version 3 documents and checks their integrity (unique ids,
 seats and their owners pointing at each other, existing categories and assets).
 Geometry rules stay in the designer.
@@ -67,6 +80,18 @@ Geometry rules stay in the designer.
 | `GET` | `/api/layouts/{id}/versions/{n}/inventory` | Its categories and units |
 | `PUT` | `/api/layouts/{id}/assets/{assetId}` | Store an image (PNG, JPEG, WebP, GIF) |
 | `GET` | `/api/layouts/{id}/assets/{assetId}` | Fetch an image |
+
+| `POST` | `/api/events` | Create (`layoutId`, `version`, `name`, `startsAt`, `endsAt`, `currency`) |
+| `GET` | `/api/events` | List events |
+| `GET` | `/api/events/{id}` | Event and prices (ETag = revision) |
+| `PUT` | `/api/events/{id}` | Name, dates, currency, status; `If-Match` required |
+| `PUT` | `/api/events/{id}/prices` | `{"prices": {"<categoryId>": 25}}` |
+| `GET` | `/api/events/{id}/availability` | Capacity, sold, held, available per category and area |
+| `GET` | `/api/events/{id}/seat-statuses` | `{"<seatId>": "sold" \| "held" \| "blocked"}`, the designer's live statuses |
+| `POST` | `/api/events/{id}/reservations` | Hold `{"items": [{"unitId": "...", "quantity": 1}]}`; `409` lists what's taken |
+| `GET` | `/api/reservations/{id}` | A reservation |
+| `POST` | `/api/reservations/{id}/confirm` | Sell what it holds (stands in for payment for now) |
+| `DELETE` | `/api/reservations/{id}` | Release a hold |
 
 Errors are [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) problem details; an invalid
 document's `400` lists what's wrong in `problems`.

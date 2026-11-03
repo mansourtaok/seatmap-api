@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.seatmap.api.web.InvalidRequestException;
+import com.seatmap.api.web.Revisions;
 import tools.jackson.databind.JsonNode;
 
 import org.springframework.http.HttpHeaders;
@@ -40,7 +41,7 @@ class LayoutController {
 	ResponseEntity<String> create(@RequestBody JsonNode document) {
 		Layout layout = this.service.create(document);
 		return ResponseEntity.created(URI.create("/api/layouts/" + layout.getId()))
-			.eTag(eTag(layout.getDraftRevision()))
+			.eTag(Revisions.eTag(layout.getDraftRevision()))
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(layout.getDraftDocument());
 	}
@@ -54,7 +55,7 @@ class LayoutController {
 	ResponseEntity<String> draft(@PathVariable UUID id) {
 		Layout layout = this.service.get(id);
 		return ResponseEntity.ok()
-			.eTag(eTag(layout.getDraftRevision()))
+			.eTag(Revisions.eTag(layout.getDraftRevision()))
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(layout.getDraftDocument());
 	}
@@ -62,8 +63,8 @@ class LayoutController {
 	@PutMapping("/{id}/draft")
 	ResponseEntity<Void> saveDraft(@PathVariable UUID id, @RequestHeader(HttpHeaders.IF_MATCH) String ifMatch,
 			@RequestBody JsonNode document) {
-		Layout layout = this.service.saveDraft(id, revision(ifMatch), document);
-		return ResponseEntity.noContent().eTag(eTag(layout.getDraftRevision())).build();
+		Layout layout = this.service.saveDraft(id, Revisions.fromIfMatch(ifMatch), document);
+		return ResponseEntity.noContent().eTag(Revisions.eTag(layout.getDraftRevision())).build();
 	}
 
 	@DeleteMapping("/{id}")
@@ -75,7 +76,7 @@ class LayoutController {
 	@PostMapping("/{id}/versions")
 	ResponseEntity<VersionSummary> publish(@PathVariable UUID id,
 			@RequestHeader(name = HttpHeaders.IF_MATCH, required = false) String ifMatch) {
-		VersionSummary version = this.service.publish(id, (ifMatch != null) ? revision(ifMatch) : null);
+		VersionSummary version = this.service.publish(id, (ifMatch != null) ? Revisions.fromIfMatch(ifMatch) : null);
 		return ResponseEntity.created(URI.create("/api/layouts/" + id + "/versions/" + version.version()))
 			.body(version);
 	}
@@ -126,27 +127,6 @@ class LayoutController {
 		}
 		catch (InvalidMediaTypeException ex) {
 			throw new InvalidRequestException("Content-Type is not a valid media type: " + contentType);
-		}
-	}
-
-	private static String eTag(int revision) {
-		return "\"" + revision + "\"";
-	}
-
-	/** Reads a revision from an If-Match value: {@code "3"}, {@code W/"3"} or a bare 3. */
-	private static int revision(String ifMatch) {
-		String value = ifMatch.strip();
-		if (value.startsWith("W/")) {
-			value = value.substring(2);
-		}
-		if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
-			value = value.substring(1, value.length() - 1);
-		}
-		try {
-			return Integer.parseInt(value);
-		}
-		catch (NumberFormatException ex) {
-			throw new InvalidRequestException("If-Match must be the layout's ETag, such as \"3\"");
 		}
 	}
 

@@ -1,5 +1,6 @@
 package com.seatmap.api;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -12,8 +13,11 @@ import org.springframework.util.unit.DataSize;
  * @param maxDocumentSize largest layout document accepted (a 100,000-seat stadium is about 30 MB)
  * @param maxAssetSize largest floor-plan image accepted
  * @param corsAllowedOrigins browser origins allowed to call the API, such as the Angular dev server
+ * @param holdDuration how long a reservation keeps its seats before they go back on sale
+ * @param maxReservationItems most seats and areas one reservation may hold
  */
 @ConfigurationProperties("seatmap")
 public record SeatmapProperties(@DefaultValue("50MB") DataSize maxDocumentSize,
-		@DefaultValue("20MB") DataSize maxAssetSize, @DefaultValue("http://localhost:4200") List<String> corsAllowedOrigins) {
+		@DefaultValue("20MB") DataSize maxAssetSize, @DefaultValue("http://localhost:4200") List<String> corsAllowedOrigins,
+		@DefaultValue("10m") Duration holdDuration, @DefaultValue("50") int maxReservationItems) {
 }
