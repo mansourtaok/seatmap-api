@@ -1,0 +1,1793 @@
+{
+  "schemaVersion": 3,
+  "id": "venue-3h",
+  "name": "Banquet Hall",
+  "description": "",
+  "units": "m",
+  "venue": {
+    "width": 30,
+    "height": 22,
+    "shape": "rectangle",
+    "backgroundColor": "#f8fafc"
+  },
+  "grid": {
+    "spacing": 1,
+    "visible": true,
+    "snapEnabled": true
+  },
+  "objects": [
+    {
+      "id": "stage-3k",
+      "type": "STAGE",
+      "name": "Head Table Stage",
+      "x": 15,
+      "y": 2,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#334155",
+        "stroke": "#0f172a",
+        "strokeWidth": 1
+      },
+      "width": 8,
+      "height": 2.5
+    },
+    {
+      "id": "table-3l",
+      "type": "TABLE_ROUND",
+      "name": "Round Table",
+      "x": 6,
+      "y": 8,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#334155",
+        "stroke": "#0f172a",
+        "strokeWidth": 1
+      },
+      "diameter": 1.8,
+      "seatConfig": {
+        "count": 10,
+        "startAngle": -90,
+        "spacing": 0.1,
+        "seatSize": 0.22,
+        "numberingPrefix": "",
+        "numberingStart": 1,
+        "clockwise": true
+      },
+      "seatIds": [
+        "seat-3m",
+        "seat-3n",
+        "seat-3o",
+        "seat-3p",
+        "seat-3q",
+        "seat-3r",
+        "seat-3s",
+        "seat-3t",
+        "seat-3u",
+        "seat-3v"
+      ]
+    },
+    {
+      "id": "seat-3m",
+      "type": "SEAT",
+      "parentId": "table-3l",
+      "name": "Seat 1",
+      "x": 6,
+      "y": 6.89,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "1",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3n",
+      "type": "SEAT",
+      "parentId": "table-3l",
+      "name": "Seat 2",
+      "x": 6.652441630044645,
+      "y": 7.101991136243808,
+      "rotation": 36,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "2",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3o",
+      "type": "SEAT",
+      "parentId": "table-3l",
+      "name": "Seat 3",
+      "x": 7.05567273308762,
+      "y": 7.656991136243809,
+      "rotation": 72,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "3",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3p",
+      "type": "SEAT",
+      "parentId": "table-3l",
+      "name": "Seat 4",
+      "x": 7.05567273308762,
+      "y": 8.343008863756191,
+      "rotation": 108,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "4",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3q",
+      "type": "SEAT",
+      "parentId": "table-3l",
+      "name": "Seat 5",
+      "x": 6.652441630044645,
+      "y": 8.898008863756191,
+      "rotation": 144,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "5",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3r",
+      "type": "SEAT",
+      "parentId": "table-3l",
+      "name": "Seat 6",
+      "x": 6,
+      "y": 9.11,
+      "rotation": 180,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "6",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3s",
+      "type": "SEAT",
+      "parentId": "table-3l",
+      "name": "Seat 7",
+      "x": 5.347558369955355,
+      "y": 8.898008863756191,
+      "rotation": 216,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "7",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3t",
+      "type": "SEAT",
+      "parentId": "table-3l",
+      "name": "Seat 8",
+      "x": 4.94432726691238,
+      "y": 8.343008863756191,
+      "rotation": 252,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "8",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3u",
+      "type": "SEAT",
+      "parentId": "table-3l",
+      "name": "Seat 9",
+      "x": 4.94432726691238,
+      "y": 7.656991136243808,
+      "rotation": 288,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "9",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3v",
+      "type": "SEAT",
+      "parentId": "table-3l",
+      "name": "Seat 10",
+      "x": 5.347558369955355,
+      "y": 7.101991136243808,
+      "rotation": 324,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "10",
+      "radius": 0.11
+    },
+    {
+      "id": "table-3w",
+      "type": "TABLE_ROUND",
+      "name": "Round Table",
+      "x": 15,
+      "y": 8,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#334155",
+        "stroke": "#0f172a",
+        "strokeWidth": 1
+      },
+      "diameter": 1.8,
+      "seatConfig": {
+        "count": 10,
+        "startAngle": -90,
+        "spacing": 0.1,
+        "seatSize": 0.22,
+        "numberingPrefix": "",
+        "numberingStart": 1,
+        "clockwise": true
+      },
+      "seatIds": [
+        "seat-3x",
+        "seat-3y",
+        "seat-3z",
+        "seat-40",
+        "seat-41",
+        "seat-42",
+        "seat-43",
+        "seat-44",
+        "seat-45",
+        "seat-46"
+      ]
+    },
+    {
+      "id": "seat-3x",
+      "type": "SEAT",
+      "parentId": "table-3w",
+      "name": "Seat 1",
+      "x": 15,
+      "y": 6.89,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "1",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3y",
+      "type": "SEAT",
+      "parentId": "table-3w",
+      "name": "Seat 2",
+      "x": 15.652441630044645,
+      "y": 7.101991136243808,
+      "rotation": 36,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "2",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-3z",
+      "type": "SEAT",
+      "parentId": "table-3w",
+      "name": "Seat 3",
+      "x": 16.055672733087622,
+      "y": 7.656991136243809,
+      "rotation": 72,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "3",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-40",
+      "type": "SEAT",
+      "parentId": "table-3w",
+      "name": "Seat 4",
+      "x": 16.055672733087622,
+      "y": 8.343008863756191,
+      "rotation": 108,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "4",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-41",
+      "type": "SEAT",
+      "parentId": "table-3w",
+      "name": "Seat 5",
+      "x": 15.652441630044645,
+      "y": 8.898008863756191,
+      "rotation": 144,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "5",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-42",
+      "type": "SEAT",
+      "parentId": "table-3w",
+      "name": "Seat 6",
+      "x": 15,
+      "y": 9.11,
+      "rotation": 180,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "6",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-43",
+      "type": "SEAT",
+      "parentId": "table-3w",
+      "name": "Seat 7",
+      "x": 14.347558369955355,
+      "y": 8.898008863756191,
+      "rotation": 216,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "7",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-44",
+      "type": "SEAT",
+      "parentId": "table-3w",
+      "name": "Seat 8",
+      "x": 13.94432726691238,
+      "y": 8.343008863756191,
+      "rotation": 252,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "8",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-45",
+      "type": "SEAT",
+      "parentId": "table-3w",
+      "name": "Seat 9",
+      "x": 13.94432726691238,
+      "y": 7.656991136243808,
+      "rotation": 288,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "9",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-46",
+      "type": "SEAT",
+      "parentId": "table-3w",
+      "name": "Seat 10",
+      "x": 14.347558369955355,
+      "y": 7.101991136243808,
+      "rotation": 324,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "10",
+      "radius": 0.11
+    },
+    {
+      "id": "table-47",
+      "type": "TABLE_ROUND",
+      "name": "Round Table",
+      "x": 24,
+      "y": 8,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#334155",
+        "stroke": "#0f172a",
+        "strokeWidth": 1
+      },
+      "diameter": 1.8,
+      "seatConfig": {
+        "count": 10,
+        "startAngle": -90,
+        "spacing": 0.1,
+        "seatSize": 0.22,
+        "numberingPrefix": "",
+        "numberingStart": 1,
+        "clockwise": true
+      },
+      "seatIds": [
+        "seat-48",
+        "seat-49",
+        "seat-4a",
+        "seat-4b",
+        "seat-4c",
+        "seat-4d",
+        "seat-4e",
+        "seat-4f",
+        "seat-4g",
+        "seat-4h"
+      ]
+    },
+    {
+      "id": "seat-48",
+      "type": "SEAT",
+      "parentId": "table-47",
+      "name": "Seat 1",
+      "x": 24,
+      "y": 6.89,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "1",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-49",
+      "type": "SEAT",
+      "parentId": "table-47",
+      "name": "Seat 2",
+      "x": 24.652441630044645,
+      "y": 7.101991136243808,
+      "rotation": 36,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "2",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4a",
+      "type": "SEAT",
+      "parentId": "table-47",
+      "name": "Seat 3",
+      "x": 25.055672733087622,
+      "y": 7.656991136243809,
+      "rotation": 72,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "3",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4b",
+      "type": "SEAT",
+      "parentId": "table-47",
+      "name": "Seat 4",
+      "x": 25.055672733087622,
+      "y": 8.343008863756191,
+      "rotation": 108,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "4",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4c",
+      "type": "SEAT",
+      "parentId": "table-47",
+      "name": "Seat 5",
+      "x": 24.652441630044645,
+      "y": 8.898008863756191,
+      "rotation": 144,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "5",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4d",
+      "type": "SEAT",
+      "parentId": "table-47",
+      "name": "Seat 6",
+      "x": 24,
+      "y": 9.11,
+      "rotation": 180,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "6",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4e",
+      "type": "SEAT",
+      "parentId": "table-47",
+      "name": "Seat 7",
+      "x": 23.347558369955355,
+      "y": 8.898008863756191,
+      "rotation": 216,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "7",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4f",
+      "type": "SEAT",
+      "parentId": "table-47",
+      "name": "Seat 8",
+      "x": 22.944327266912378,
+      "y": 8.343008863756191,
+      "rotation": 252,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "8",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4g",
+      "type": "SEAT",
+      "parentId": "table-47",
+      "name": "Seat 9",
+      "x": 22.944327266912378,
+      "y": 7.656991136243808,
+      "rotation": 288,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "9",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4h",
+      "type": "SEAT",
+      "parentId": "table-47",
+      "name": "Seat 10",
+      "x": 23.347558369955355,
+      "y": 7.101991136243808,
+      "rotation": 324,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "10",
+      "radius": 0.11
+    },
+    {
+      "id": "table-4i",
+      "type": "TABLE_ROUND",
+      "name": "Round Table",
+      "x": 6,
+      "y": 14,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#334155",
+        "stroke": "#0f172a",
+        "strokeWidth": 1
+      },
+      "diameter": 1.8,
+      "seatConfig": {
+        "count": 10,
+        "startAngle": -90,
+        "spacing": 0.1,
+        "seatSize": 0.22,
+        "numberingPrefix": "",
+        "numberingStart": 1,
+        "clockwise": true
+      },
+      "seatIds": [
+        "seat-4j",
+        "seat-4k",
+        "seat-4l",
+        "seat-4m",
+        "seat-4n",
+        "seat-4o",
+        "seat-4p",
+        "seat-4q",
+        "seat-4r",
+        "seat-4s"
+      ]
+    },
+    {
+      "id": "seat-4j",
+      "type": "SEAT",
+      "parentId": "table-4i",
+      "name": "Seat 1",
+      "x": 6,
+      "y": 12.89,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "1",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4k",
+      "type": "SEAT",
+      "parentId": "table-4i",
+      "name": "Seat 2",
+      "x": 6.652441630044645,
+      "y": 13.101991136243809,
+      "rotation": 36,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "2",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4l",
+      "type": "SEAT",
+      "parentId": "table-4i",
+      "name": "Seat 3",
+      "x": 7.05567273308762,
+      "y": 13.656991136243809,
+      "rotation": 72,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "3",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4m",
+      "type": "SEAT",
+      "parentId": "table-4i",
+      "name": "Seat 4",
+      "x": 7.05567273308762,
+      "y": 14.343008863756191,
+      "rotation": 108,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "4",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4n",
+      "type": "SEAT",
+      "parentId": "table-4i",
+      "name": "Seat 5",
+      "x": 6.652441630044645,
+      "y": 14.898008863756191,
+      "rotation": 144,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "5",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4o",
+      "type": "SEAT",
+      "parentId": "table-4i",
+      "name": "Seat 6",
+      "x": 6,
+      "y": 15.11,
+      "rotation": 180,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "6",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4p",
+      "type": "SEAT",
+      "parentId": "table-4i",
+      "name": "Seat 7",
+      "x": 5.347558369955355,
+      "y": 14.898008863756191,
+      "rotation": 216,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "7",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4q",
+      "type": "SEAT",
+      "parentId": "table-4i",
+      "name": "Seat 8",
+      "x": 4.94432726691238,
+      "y": 14.343008863756191,
+      "rotation": 252,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "8",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4r",
+      "type": "SEAT",
+      "parentId": "table-4i",
+      "name": "Seat 9",
+      "x": 4.94432726691238,
+      "y": 13.656991136243809,
+      "rotation": 288,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "9",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4s",
+      "type": "SEAT",
+      "parentId": "table-4i",
+      "name": "Seat 10",
+      "x": 5.347558369955355,
+      "y": 13.101991136243809,
+      "rotation": 324,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "10",
+      "radius": 0.11
+    },
+    {
+      "id": "table-4t",
+      "type": "TABLE_ROUND",
+      "name": "Round Table",
+      "x": 15,
+      "y": 14,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#334155",
+        "stroke": "#0f172a",
+        "strokeWidth": 1
+      },
+      "diameter": 1.8,
+      "seatConfig": {
+        "count": 10,
+        "startAngle": -90,
+        "spacing": 0.1,
+        "seatSize": 0.22,
+        "numberingPrefix": "",
+        "numberingStart": 1,
+        "clockwise": true
+      },
+      "seatIds": [
+        "seat-4u",
+        "seat-4v",
+        "seat-4w",
+        "seat-4x",
+        "seat-4y",
+        "seat-4z",
+        "seat-50",
+        "seat-51",
+        "seat-52",
+        "seat-53"
+      ]
+    },
+    {
+      "id": "seat-4u",
+      "type": "SEAT",
+      "parentId": "table-4t",
+      "name": "Seat 1",
+      "x": 15,
+      "y": 12.89,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "1",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4v",
+      "type": "SEAT",
+      "parentId": "table-4t",
+      "name": "Seat 2",
+      "x": 15.652441630044645,
+      "y": 13.101991136243809,
+      "rotation": 36,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "2",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4w",
+      "type": "SEAT",
+      "parentId": "table-4t",
+      "name": "Seat 3",
+      "x": 16.055672733087622,
+      "y": 13.656991136243809,
+      "rotation": 72,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "3",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4x",
+      "type": "SEAT",
+      "parentId": "table-4t",
+      "name": "Seat 4",
+      "x": 16.055672733087622,
+      "y": 14.343008863756191,
+      "rotation": 108,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "4",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4y",
+      "type": "SEAT",
+      "parentId": "table-4t",
+      "name": "Seat 5",
+      "x": 15.652441630044645,
+      "y": 14.898008863756191,
+      "rotation": 144,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "5",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-4z",
+      "type": "SEAT",
+      "parentId": "table-4t",
+      "name": "Seat 6",
+      "x": 15,
+      "y": 15.11,
+      "rotation": 180,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "6",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-50",
+      "type": "SEAT",
+      "parentId": "table-4t",
+      "name": "Seat 7",
+      "x": 14.347558369955355,
+      "y": 14.898008863756191,
+      "rotation": 216,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "7",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-51",
+      "type": "SEAT",
+      "parentId": "table-4t",
+      "name": "Seat 8",
+      "x": 13.94432726691238,
+      "y": 14.343008863756191,
+      "rotation": 252,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "8",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-52",
+      "type": "SEAT",
+      "parentId": "table-4t",
+      "name": "Seat 9",
+      "x": 13.94432726691238,
+      "y": 13.656991136243809,
+      "rotation": 288,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "9",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-53",
+      "type": "SEAT",
+      "parentId": "table-4t",
+      "name": "Seat 10",
+      "x": 14.347558369955355,
+      "y": 13.101991136243809,
+      "rotation": 324,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "10",
+      "radius": 0.11
+    },
+    {
+      "id": "table-54",
+      "type": "TABLE_ROUND",
+      "name": "Round Table",
+      "x": 24,
+      "y": 14,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#334155",
+        "stroke": "#0f172a",
+        "strokeWidth": 1
+      },
+      "diameter": 1.8,
+      "seatConfig": {
+        "count": 10,
+        "startAngle": -90,
+        "spacing": 0.1,
+        "seatSize": 0.22,
+        "numberingPrefix": "",
+        "numberingStart": 1,
+        "clockwise": true
+      },
+      "seatIds": [
+        "seat-55",
+        "seat-56",
+        "seat-57",
+        "seat-58",
+        "seat-59",
+        "seat-5a",
+        "seat-5b",
+        "seat-5c",
+        "seat-5d",
+        "seat-5e"
+      ]
+    },
+    {
+      "id": "seat-55",
+      "type": "SEAT",
+      "parentId": "table-54",
+      "name": "Seat 1",
+      "x": 24,
+      "y": 12.89,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "1",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-56",
+      "type": "SEAT",
+      "parentId": "table-54",
+      "name": "Seat 2",
+      "x": 24.652441630044645,
+      "y": 13.101991136243809,
+      "rotation": 36,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "2",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-57",
+      "type": "SEAT",
+      "parentId": "table-54",
+      "name": "Seat 3",
+      "x": 25.055672733087622,
+      "y": 13.656991136243809,
+      "rotation": 72,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "3",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-58",
+      "type": "SEAT",
+      "parentId": "table-54",
+      "name": "Seat 4",
+      "x": 25.055672733087622,
+      "y": 14.343008863756191,
+      "rotation": 108,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "4",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-59",
+      "type": "SEAT",
+      "parentId": "table-54",
+      "name": "Seat 5",
+      "x": 24.652441630044645,
+      "y": 14.898008863756191,
+      "rotation": 144,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "5",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5a",
+      "type": "SEAT",
+      "parentId": "table-54",
+      "name": "Seat 6",
+      "x": 24,
+      "y": 15.11,
+      "rotation": 180,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "6",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5b",
+      "type": "SEAT",
+      "parentId": "table-54",
+      "name": "Seat 7",
+      "x": 23.347558369955355,
+      "y": 14.898008863756191,
+      "rotation": 216,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "7",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5c",
+      "type": "SEAT",
+      "parentId": "table-54",
+      "name": "Seat 8",
+      "x": 22.944327266912378,
+      "y": 14.343008863756191,
+      "rotation": 252,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "8",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5d",
+      "type": "SEAT",
+      "parentId": "table-54",
+      "name": "Seat 9",
+      "x": 22.944327266912378,
+      "y": 13.656991136243809,
+      "rotation": 288,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "9",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5e",
+      "type": "SEAT",
+      "parentId": "table-54",
+      "name": "Seat 10",
+      "x": 23.347558369955355,
+      "y": 13.101991136243809,
+      "rotation": 324,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "10",
+      "radius": 0.11
+    },
+    {
+      "id": "table-5f",
+      "type": "TABLE_ROUND",
+      "name": "Round Table",
+      "x": 6,
+      "y": 19,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#334155",
+        "stroke": "#0f172a",
+        "strokeWidth": 1
+      },
+      "diameter": 1.8,
+      "seatConfig": {
+        "count": 10,
+        "startAngle": -90,
+        "spacing": 0.1,
+        "seatSize": 0.22,
+        "numberingPrefix": "",
+        "numberingStart": 1,
+        "clockwise": true
+      },
+      "seatIds": [
+        "seat-5g",
+        "seat-5h",
+        "seat-5i",
+        "seat-5j",
+        "seat-5k",
+        "seat-5l",
+        "seat-5m",
+        "seat-5n",
+        "seat-5o",
+        "seat-5p"
+      ]
+    },
+    {
+      "id": "seat-5g",
+      "type": "SEAT",
+      "parentId": "table-5f",
+      "name": "Seat 1",
+      "x": 6,
+      "y": 17.89,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "1",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5h",
+      "type": "SEAT",
+      "parentId": "table-5f",
+      "name": "Seat 2",
+      "x": 6.652441630044645,
+      "y": 18.101991136243807,
+      "rotation": 36,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "2",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5i",
+      "type": "SEAT",
+      "parentId": "table-5f",
+      "name": "Seat 3",
+      "x": 7.05567273308762,
+      "y": 18.656991136243807,
+      "rotation": 72,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "3",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5j",
+      "type": "SEAT",
+      "parentId": "table-5f",
+      "name": "Seat 4",
+      "x": 7.05567273308762,
+      "y": 19.343008863756193,
+      "rotation": 108,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "4",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5k",
+      "type": "SEAT",
+      "parentId": "table-5f",
+      "name": "Seat 5",
+      "x": 6.652441630044645,
+      "y": 19.898008863756193,
+      "rotation": 144,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "5",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5l",
+      "type": "SEAT",
+      "parentId": "table-5f",
+      "name": "Seat 6",
+      "x": 6,
+      "y": 20.11,
+      "rotation": 180,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "6",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5m",
+      "type": "SEAT",
+      "parentId": "table-5f",
+      "name": "Seat 7",
+      "x": 5.347558369955355,
+      "y": 19.898008863756193,
+      "rotation": 216,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "7",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5n",
+      "type": "SEAT",
+      "parentId": "table-5f",
+      "name": "Seat 8",
+      "x": 4.94432726691238,
+      "y": 19.343008863756193,
+      "rotation": 252,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "8",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5o",
+      "type": "SEAT",
+      "parentId": "table-5f",
+      "name": "Seat 9",
+      "x": 4.94432726691238,
+      "y": 18.656991136243807,
+      "rotation": 288,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "9",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5p",
+      "type": "SEAT",
+      "parentId": "table-5f",
+      "name": "Seat 10",
+      "x": 5.347558369955355,
+      "y": 18.101991136243807,
+      "rotation": 324,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "10",
+      "radius": 0.11
+    },
+    {
+      "id": "table-5q",
+      "type": "TABLE_ROUND",
+      "name": "Round Table",
+      "x": 24,
+      "y": 19,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#334155",
+        "stroke": "#0f172a",
+        "strokeWidth": 1
+      },
+      "diameter": 1.8,
+      "seatConfig": {
+        "count": 10,
+        "startAngle": -90,
+        "spacing": 0.1,
+        "seatSize": 0.22,
+        "numberingPrefix": "",
+        "numberingStart": 1,
+        "clockwise": true
+      },
+      "seatIds": [
+        "seat-5r",
+        "seat-5s",
+        "seat-5t",
+        "seat-5u",
+        "seat-5v",
+        "seat-5w",
+        "seat-5x",
+        "seat-5y",
+        "seat-5z",
+        "seat-60"
+      ]
+    },
+    {
+      "id": "seat-5r",
+      "type": "SEAT",
+      "parentId": "table-5q",
+      "name": "Seat 1",
+      "x": 24,
+      "y": 17.89,
+      "rotation": 0,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "1",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5s",
+      "type": "SEAT",
+      "parentId": "table-5q",
+      "name": "Seat 2",
+      "x": 24.652441630044645,
+      "y": 18.101991136243807,
+      "rotation": 36,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "2",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5t",
+      "type": "SEAT",
+      "parentId": "table-5q",
+      "name": "Seat 3",
+      "x": 25.055672733087622,
+      "y": 18.656991136243807,
+      "rotation": 72,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "3",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5u",
+      "type": "SEAT",
+      "parentId": "table-5q",
+      "name": "Seat 4",
+      "x": 25.055672733087622,
+      "y": 19.343008863756193,
+      "rotation": 108,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "4",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5v",
+      "type": "SEAT",
+      "parentId": "table-5q",
+      "name": "Seat 5",
+      "x": 24.652441630044645,
+      "y": 19.898008863756193,
+      "rotation": 144,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "5",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5w",
+      "type": "SEAT",
+      "parentId": "table-5q",
+      "name": "Seat 6",
+      "x": 24,
+      "y": 20.11,
+      "rotation": 180,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "6",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5x",
+      "type": "SEAT",
+      "parentId": "table-5q",
+      "name": "Seat 7",
+      "x": 23.347558369955355,
+      "y": 19.898008863756193,
+      "rotation": 216,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "7",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5y",
+      "type": "SEAT",
+      "parentId": "table-5q",
+      "name": "Seat 8",
+      "x": 22.944327266912378,
+      "y": 19.343008863756193,
+      "rotation": 252,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "8",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-5z",
+      "type": "SEAT",
+      "parentId": "table-5q",
+      "name": "Seat 9",
+      "x": 22.944327266912378,
+      "y": 18.656991136243807,
+      "rotation": 288,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "9",
+      "radius": 0.11
+    },
+    {
+      "id": "seat-60",
+      "type": "SEAT",
+      "parentId": "table-5q",
+      "name": "Seat 10",
+      "x": 23.347558369955355,
+      "y": 18.101991136243807,
+      "rotation": 324,
+      "locked": false,
+      "visible": true,
+      "style": {
+        "fill": "#cbd5e1",
+        "stroke": "#475569",
+        "strokeWidth": 1
+      },
+      "seatNumber": "10",
+      "radius": 0.11
+    }
+  ],
+  "background": null,
+  "assets": {},
+  "ticketCategories": [
+    {
+      "id": "cat-3i",
+      "name": "General Admission",
+      "color": "#60a5fa",
+      "price": 25
+    },
+    {
+      "id": "cat-3j",
+      "name": "VIP",
+      "color": "#f472b6",
+      "price": 75
+    }
+  ],
+  "metadata": {
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  }
+}

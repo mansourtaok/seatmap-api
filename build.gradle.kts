@@ -36,4 +36,8 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	// Tests run against their own database (created like the app's, see README) unless told otherwise.
+	if (System.getenv("SEATMAP_DB_URL") == null) {
+		environment("SEATMAP_DB_URL", "jdbc:postgresql://localhost:5432/seatmap_test")
+	}
 }
