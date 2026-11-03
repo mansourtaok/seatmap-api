@@ -14,7 +14,7 @@ final class EventViews {
 	}
 
 	record EventView(UUID id, UUID organizationId, UUID layoutId, int version, String name, Instant startsAt,
-			Instant endsAt, String currency, EventStatus status, int revision, List<Price> prices) {
+			Instant endsAt, String currency, String timeZone, EventStatus status, int revision, List<Price> prices) {
 	}
 
 	/** An on-sale event as buyers see it, with the layout document to draw the seat map from. */
@@ -40,7 +40,11 @@ final class EventViews {
 	}
 
 	record ReservationView(UUID id, UUID eventId, ReservationStatus status, Instant expiresAt, BigDecimal total,
-			String currency, List<ReservationItem> items) {
+			String currency, Buyer buyer, List<ReservationItem> items) {
+	}
+
+	/** Null fields weren't given. */
+	record Buyer(String name, String email, String phone) {
 	}
 
 	record ReservationItem(String unitId, String label, int quantity, String categoryId, BigDecimal unitPrice) {

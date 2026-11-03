@@ -160,7 +160,9 @@ class ReservationRepository {
 	}
 
 	Optional<Row> find(UUID id) {
-		return this.jdbcClient.sql("SELECT id, event_id, status, expires_at, total FROM reservation WHERE id = ?")
+		return this.jdbcClient.sql("""
+				SELECT id, event_id, status, expires_at, total, buyer_name, buyer_email, buyer_phone
+				FROM reservation WHERE id = ?""")
 			.param(id)
 			.query(ReservationRepository::row)
 			.optional();
@@ -169,7 +171,9 @@ class ReservationRepository {
 	/** Locks the reservation, so confirming, releasing and expiring it happen one at a time. */
 	Optional<Row> findForUpdate(UUID id) {
 		return this.jdbcClient
-			.sql("SELECT id, event_id, status, expires_at, total FROM reservation WHERE id = ? FOR UPDATE")
+			.sql("""
+					SELECT id, event_id, status, expires_at, total, buyer_name, buyer_email, buyer_phone
+					FROM reservation WHERE id = ? FOR UPDATE""")
 			.param(id)
 			.query(ReservationRepository::row)
 			.optional();
@@ -200,6 +204,12 @@ class ReservationRepository {
 	void freeSeats(UUID reservationId) {
 		this.jdbcClient.sql("DELETE FROM event_seat WHERE reservation_id = ? AND status = 'HELD'")
 			.param(reservationId)
+			.update();
+	}
+
+	void updateBuyer(UUID reservationId, String name, String email, String phone) {
+		this.jdbcClient.sql("UPDATE reservation SET buyer_name = ?, buyer_email = ?, buyer_phone = ? WHERE id = ?")
+			.params(name, email, phone, reservationId)
 			.update();
 	}
 
@@ -241,7 +251,8 @@ class ReservationRepository {
 
 	private static Row row(java.sql.ResultSet rs, int rowNumber) throws java.sql.SQLException {
 		return new Row(rs.getObject(1, UUID.class), rs.getObject(2, UUID.class),
-				ReservationStatus.valueOf(rs.getString(3)), rs.getTimestamp(4).toInstant(), rs.getBigDecimal(5));
+				ReservationStatus.valueOf(rs.getString(3)), rs.getTimestamp(4).toInstant(), rs.getBigDecimal(5),
+				new EventViews.Buyer(rs.getString(6), rs.getString(7), rs.getString(8)));
 	}
 
 	/** An inventory unit as far as selling it is concerned. */
@@ -254,7 +265,8 @@ class ReservationRepository {
 
 	}
 
-	record Row(UUID id, UUID eventId, ReservationStatus status, Instant expiresAt, BigDecimal total) {
+	record Row(UUID id, UUID eventId, ReservationStatus status, Instant expiresAt, BigDecimal total,
+			EventViews.Buyer buyer) {
 	}
 
 	record Item(String unitId, String label, String kind, int quantity, String categoryId, BigDecimal unitPrice) {

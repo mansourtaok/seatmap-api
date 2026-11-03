@@ -1,6 +1,8 @@
 package com.seatmap.api.event;
 
+import java.time.DateTimeException;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -63,12 +65,14 @@ public class EventService {
 	@Transactional
 	public EventView create(EventRequests.CreateEvent request) {
 		requireEndAfterStart(request.startsAt(), request.endsAt());
+		requireTimeZone(request.timeZone());
 		Layout layout = this.layouts.find(request.layoutId(), Role.EDITOR);
 		LayoutVersion version = this.layouts.version(request.layoutId(), request.version());
 		Instant now = now();
 		Event event = new Event(UUID.randomUUID(), layout.getOrganizationId(), request.layoutId(), version.getId(),
 				request.version(), now);
-		event.update(request.name(), request.startsAt(), request.endsAt(), request.currency(), EventStatus.DRAFT, now);
+		event.update(request.name(), request.startsAt(), request.endsAt(), request.currency(), request.timeZone(),
+				EventStatus.DRAFT, now);
 		this.events.saveAndFlush(event);
 		this.prices.copyDefaults(event.getId(), version.getId());
 		return view(event);
@@ -120,6 +124,7 @@ public class EventService {
 				.formatted(event.getRevision(), expectedRevision));
 		}
 		requireEndAfterStart(request.startsAt(), request.endsAt());
+		requireTimeZone(request.timeZone());
 		if (!event.getStatus().canBecome(request.status())) {
 			throw new ConflictException("An event that is %s can't become %s".formatted(event.getStatus(),
 					request.status()));
@@ -127,7 +132,8 @@ public class EventService {
 		if (!event.getCurrency().equals(request.currency()) && this.reservations.existsForEvent(id)) {
 			throw new ConflictException("The currency can't change once tickets have been reserved");
 		}
-		event.update(request.name(), request.startsAt(), request.endsAt(), request.currency(), request.status(), now());
+		event.update(request.name(), request.startsAt(), request.endsAt(), request.currency(), request.timeZone(),
+				request.status(), now());
 		// Flushing bumps the revision now, so the caller gets the new ETag.
 		this.events.saveAndFlush(event);
 		return view(event);
@@ -253,8 +259,17 @@ public class EventService {
 
 	private static EventView view(Event event, List<Price> prices) {
 		return new EventView(event.getId(), event.getOrganizationId(), event.getLayoutId(), event.getVersionNumber(),
-				event.getName(), event.getStartsAt(), event.getEndsAt(), event.getCurrency(), event.getStatus(),
-				event.getRevision(), prices);
+				event.getName(), event.getStartsAt(), event.getEndsAt(), event.getCurrency(), event.getTimeZone(),
+				event.getStatus(), event.getRevision(), prices);
+	}
+
+	private static void requireTimeZone(String timeZone) {
+		try {
+			ZoneId.of(timeZone);
+		}
+		catch (DateTimeException ex) {
+			throw new InvalidRequestException("timeZone must be an IANA time zone such as Europe/Paris, not " + timeZone);
+		}
 	}
 
 	private static void requireEndAfterStart(Instant startsAt, Instant endsAt) {

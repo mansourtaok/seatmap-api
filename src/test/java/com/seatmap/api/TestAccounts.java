@@ -60,6 +60,14 @@ public final class TestAccounts {
 			.build();
 	}
 
+	/** A buyer's browser: not logged in, but with a CSRF token. */
+	public static MockMvc guestMockMvc(WebApplicationContext context) {
+		return MockMvcBuilders.webAppContextSetup(context)
+			.apply(springSecurity())
+			.defaultRequest(get("/").with(csrf()))
+			.build();
+	}
+
 	public static RequestPostProcessor as(SeatmapUser user) {
 		return authentication(UsernamePasswordAuthenticationToken.authenticated(user, null, List.of()));
 	}

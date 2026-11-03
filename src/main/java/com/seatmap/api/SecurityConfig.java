@@ -33,12 +33,14 @@ class SecurityConfig {
 				.requestMatchers("/actuator/health/**", "/actuator/info").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/public/**").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/public/tickets/resend").permitAll()
 				// Buyers: see what's left and hold, view or release their own reservation. The
 				// services only show them events that are on sale.
 				.requestMatchers(HttpMethod.GET, "/api/events/*/availability", "/api/events/*/seat-statuses")
 				.permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/events/*/reservations").permitAll()
-				.requestMatchers(HttpMethod.GET, "/api/reservations/*").permitAll()
+				.requestMatchers(HttpMethod.GET, "/api/reservations/*", "/api/reservations/*/tickets.pdf").permitAll()
+				.requestMatchers(HttpMethod.PUT, "/api/reservations/*/buyer").permitAll()
 				.requestMatchers(HttpMethod.DELETE, "/api/reservations/*").permitAll()
 				.anyRequest().authenticated())
 			.csrf((csrf) -> csrf.spa())

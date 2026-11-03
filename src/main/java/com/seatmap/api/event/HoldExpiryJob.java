@@ -18,7 +18,8 @@ class HoldExpiryJob {
 		this.reservations = reservations;
 	}
 
-	@Scheduled(fixedDelayString = "${seatmap.hold-expiry-interval:30s}")
+	@Scheduled(fixedDelayString = "${seatmap.hold-expiry-interval:30s}",
+			initialDelayString = "${seatmap.hold-expiry-interval:30s}")
 	void releaseExpired() {
 		int freed = this.reservations.releaseExpired();
 		if (freed > 0) {

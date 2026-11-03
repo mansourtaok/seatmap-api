@@ -18,6 +18,7 @@ import com.seatmap.api.event.EventViews.ReservationItem;
 import com.seatmap.api.event.EventViews.ReservationStatus;
 import com.seatmap.api.event.EventViews.ReservationView;
 import com.seatmap.api.event.ReservationRepository.SellableUnit;
+import com.seatmap.api.ticket.TicketService;
 import com.seatmap.api.web.ConflictException;
 import com.seatmap.api.web.InvalidRequestException;
 import com.seatmap.api.web.NotFoundException;
@@ -49,14 +50,17 @@ public class ReservationService {
 
 	private final HoldRateLimiter rateLimiter;
 
+	private final TicketService tickets;
+
 	ReservationService(EventService events, PriceRepository prices, ReservationRepository reservations,
-			SeatmapProperties properties, Access access, HoldRateLimiter rateLimiter) {
+			SeatmapProperties properties, Access access, HoldRateLimiter rateLimiter, TicketService tickets) {
 		this.events = events;
 		this.prices = prices;
 		this.reservations = reservations;
 		this.properties = properties;
 		this.access = access;
 		this.rateLimiter = rateLimiter;
+		this.tickets = tickets;
 	}
 
 	@Transactional
@@ -136,7 +140,10 @@ public class ReservationService {
 		return view(id);
 	}
 
-	/** Sells what the reservation holds; staff only. Confirming twice is harmless. */
+	/**
+	 * Sells what the reservation holds and issues its tickets, emailing them if the buyer gave
+	 * an address; staff only. Confirming twice is harmless.
+	 */
 	@Transactional
 	public ReservationView confirm(UUID id) {
 		ReservationRepository.Row reservation = this.reservations.findForUpdate(id).orElseThrow(() -> notFound(id));
@@ -172,6 +179,25 @@ public class ReservationService {
 			}
 		}
 		this.reservations.markConfirmed(id, now);
+		this.tickets.issue(id);
+		return view(id);
+	}
+
+	/**
+	 * Sets who the tickets are for. The holder can do it while the hold lasts; staff can also
+	 * correct it once sold, though tickets already emailed went to the old address.
+	 */
+	@Transactional
+	public ReservationView setBuyer(UUID id, EventRequests.Buyer buyer) {
+		ReservationRepository.Row reservation = this.reservations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		Event event = this.events.find(reservation.eventId());
+		boolean staff = this.access.has(event.getOrganizationId(), Role.EDITOR);
+		boolean held = reservation.status() == ReservationStatus.HELD
+				&& reservation.expiresAt().isAfter(EventService.now());
+		if (!held && !(staff && reservation.status() == ReservationStatus.CONFIRMED)) {
+			throw new ConflictException("This reservation can't be changed any more");
+		}
+		this.reservations.updateBuyer(id, buyer.name().strip(), blankToNull(buyer.email()), blankToNull(buyer.phone()));
 		return view(id);
 	}
 
@@ -230,7 +256,11 @@ public class ReservationService {
 					item.unitPrice()))
 			.toList();
 		return new ReservationView(id, reservation.eventId(), status, reservation.expiresAt(), reservation.total(),
-				this.events.find(reservation.eventId()).getCurrency(), items);
+				this.events.find(reservation.eventId()).getCurrency(), reservation.buyer(), items);
+	}
+
+	private static String blankToNull(String value) {
+		return (value == null || value.isBlank()) ? null : value.strip();
 	}
 
 	private static NotFoundException notFound(UUID id) {

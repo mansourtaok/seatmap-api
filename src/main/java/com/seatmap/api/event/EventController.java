@@ -116,6 +116,11 @@ class EventController {
 		return this.reservations.get(id);
 	}
 
+	@PutMapping("/api/reservations/{id}/buyer")
+	ReservationView setBuyer(@PathVariable UUID id, @Valid @RequestBody EventRequests.Buyer buyer) {
+		return this.reservations.setBuyer(id, buyer);
+	}
+
 	@PostMapping("/api/reservations/{id}/confirm")
 	ReservationView confirm(@PathVariable UUID id) {
 		return this.reservations.confirm(id);

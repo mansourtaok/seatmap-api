@@ -24,9 +24,11 @@ Claude API for the AI designer.
 
    ```properties
    spring.datasource.password=<password>
+   # Signs ticket QR codes: a long random secret (32+ characters). Keep it out of git.
+   seatmap.tickets.key=<secret>
    ```
 
-   or set the `SEATMAP_DB_PASSWORD` environment variable instead.
+   or set `SEATMAP_DB_PASSWORD` and `SEATMAP_TICKET_KEY` instead.
 
 3. Run:
 
@@ -45,8 +47,8 @@ Claude API for the AI designer.
   in an `X-XSRF-TOKEN` header, which Angular's `HttpClient` does by itself. Serve the web app
   and `/api` from the same origin; in development, use the Angular dev-server proxy.
 - **Organizations** own layouts and events. Members have a role: `VIEWER` (read),
-  `EDITOR` (edit, publish, run events, confirm at the box office) or `ADMIN` (also members
-  and deleting layouts). Another organization's items answer `404`. An organization always
+  `SCANNER` (also check tickets in at the door), `EDITOR` (edit, publish, run events, confirm
+  at the box office) or `ADMIN` (also members and deleting layouts). Another organization's items answer `404`. An organization always
   keeps at least one admin.
 - **Buyers** need no account. They see events that are on sale (`/api/public/...`), hold
   and release seats, and use the reservation id as their key. A guest (by IP address) can
@@ -55,6 +57,22 @@ Claude API for the AI designer.
   payments do it themselves.
 - Behind a reverse proxy, set `server.forward-headers-strategy` so the guest limits see
   the client's address. Set `SEATMAP_SECURE_COOKIES=true` when serving over HTTPS.
+
+## Tickets
+
+- **Confirming** a reservation issues its tickets: one per seat, and one per place for
+  standing areas. If the buyer gave an email (`PUT /api/reservations/{id}/buyer`), the
+  tickets are emailed as a PDF. A box-office sale can skip the email and print instead.
+- **QR codes** hold the ticket id signed with the ticket key (HMAC-SHA256), so they can't be
+  forged. The codes themselves aren't stored. Changing the key invalidates every ticket.
+- **Check-in** at the door (`SCANNER` role and up) admits each ticket once. Two gates
+  scanning the same ticket at once can't both succeed. Editors can undo a check-in.
+- **Email** goes through an outbox table and a background sender with retries. During
+  development, emails are written to `build/mail/` as `.eml` files. For real sending, set
+  `SEATMAP_MAIL_DELIVERY=smtp` and the `spring.mail.*` server settings.
+- **Events** have an IANA `timeZone` (e.g. `Europe/Paris`); tickets print local time.
+- PDFs use the standard Helvetica font. Characters outside Western European scripts print
+  as "?" until a Unicode font is embedded.
 
 ## Model
 
@@ -69,7 +87,7 @@ Claude API for the AI designer.
 - **asset**: floor-plan images. They're write-once, because published versions show them.
 
 - **event**: sells one published version, with its own currency and status
-  (`DRAFT`, `ON_SALE`, `CLOSED`, `CANCELLED`).
+  (`DRAFT`, `ON_SALE`, `CLOSED`, `CANCELLED`) and time zone.
 - **event_price**: the event's price per category. It starts at the version's defaults.
 - **reservation** / **reservation_item**: a basket, held for 10 minutes
   (`seatmap.hold-duration`), then confirmed (sold) or released. Items keep the price
@@ -111,15 +129,21 @@ Geometry rules stay in the designer.
 | `PUT` | `/api/layouts/{id}/assets/{assetId}` | Store an image (PNG, JPEG, WebP, GIF) |
 | `GET` | `/api/layouts/{id}/assets/{assetId}` | Fetch an image |
 
-| `POST` | `/api/events` | Create (`layoutId`, `version`, `name`, `startsAt`, `endsAt`, `currency`) |
+| `POST` | `/api/events` | Create (`layoutId`, `version`, `name`, `startsAt`, `endsAt`, `currency`, `timeZone`) |
 | `GET` | `/api/events` | List events |
 | `GET` | `/api/events/{id}` | Event and prices (ETag = revision) |
-| `PUT` | `/api/events/{id}` | Name, dates, currency, status; `If-Match` required |
+| `PUT` | `/api/events/{id}` | Name, dates, currency, time zone, status; `If-Match` required |
 | `PUT` | `/api/events/{id}/prices` | `{"prices": {"<categoryId>": 25}}` |
 | `GET` | `/api/events/{id}/availability` | Capacity, sold, held, available per category and area |
 | `GET` | `/api/events/{id}/seat-statuses` | `{"<seatId>": "sold" \| "held" \| "blocked"}`, the designer's live statuses |
 | `POST` | `/api/events/{id}/reservations` | Hold `{"items": [{"unitId": "...", "quantity": 1}]}`; `409` lists what's taken |
 | `GET` | `/api/reservations/{id}` | A reservation |
+| `PUT` | `/api/reservations/{id}/buyer` | `name`, `email`, `phone`: the holder while held; staff after |
+| `GET` | `/api/reservations/{id}/tickets.pdf` | The tickets, once confirmed |
+| `POST` | `/api/public/tickets/resend` | `{"email": "..."}`: resends that address's tickets; always `202` |
+| `POST` | `/api/events/{id}/check-in` | `{"code": "..."}` → `VALID`, `ALREADY_CHECKED_IN` or `NOT_VALID` (scanner) |
+| `DELETE` | `/api/events/{id}/check-in/{ticketId}` | Undo a check-in (editor) |
+| `GET` | `/api/events/{id}/check-in/stats` | Issued and checked in, per category (scanner) |
 | `POST` | `/api/reservations/{id}/confirm` | Sell what it holds (stands in for payment for now) |
 | `DELETE` | `/api/reservations/{id}` | Release a hold |
 

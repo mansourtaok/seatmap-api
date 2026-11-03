@@ -63,7 +63,7 @@ class AccessApiTests {
 			.content(layout().toString()), this.alice).andExpect(status().isCreated())).get("id").asString();
 		perform(post("/api/layouts/" + this.layoutId + "/versions"), this.alice).andExpect(status().isCreated());
 		this.eventId = read(perform(post("/api/events").contentType(MediaType.APPLICATION_JSON).content("""
-				{"layoutId": "%s", "version": 1, "name": "Gala", "startsAt": "2027-05-01T18:00:00Z", "currency": "EUR"}"""
+				{"layoutId": "%s", "version": 1, "name": "Gala", "startsAt": "2027-05-01T18:00:00Z", "currency": "EUR", "timeZone": "Europe/Paris"}"""
 			.formatted(this.layoutId)), this.alice).andExpect(status().isCreated())).get("id").asString();
 	}
 
@@ -181,7 +181,7 @@ class AccessApiTests {
 		perform(put("/api/events/" + this.eventId).header(HttpHeaders.IF_MATCH, "\"0\"")
 			.contentType(MediaType.APPLICATION_JSON)
 			.content("""
-					{"name": "Gala", "startsAt": "2027-05-01T18:00:00Z", "currency": "EUR", "status": "ON_SALE"}"""),
+					{"name": "Gala", "startsAt": "2027-05-01T18:00:00Z", "currency": "EUR", "timeZone": "Europe/Paris", "status": "ON_SALE"}"""),
 				this.alice)
 			.andExpect(status().isOk());
 	}

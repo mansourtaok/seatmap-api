@@ -73,7 +73,7 @@ class EventApiTests {
 		this.mvc.perform(post("/api/layouts/" + layoutId + "/versions")).andExpect(status().isCreated());
 		this.eventId = read(this.mvc.perform(post("/api/events").contentType(MediaType.APPLICATION_JSON).content("""
 				{"layoutId": "%s", "version": 1, "name": "Final", "startsAt": "2027-05-01T18:00:00Z",
-				 "endsAt": "2027-05-01T21:00:00Z", "currency": "EUR"}""".formatted(layoutId)))
+				 "endsAt": "2027-05-01T21:00:00Z", "currency": "EUR", "timeZone": "Europe/Paris"}""".formatted(layoutId)))
 			.andExpect(status().isCreated())
 			.andExpect(header().string(HttpHeaders.ETAG, "\"0\""))
 			.andExpect(jsonPath("$.status").value("DRAFT"))
@@ -264,7 +264,7 @@ class EventApiTests {
 			.contentType(MediaType.APPLICATION_JSON)
 			.content("""
 					{"name": "Final", "startsAt": "2027-05-01T18:00:00Z", "endsAt": "2027-05-01T21:00:00Z",
-					 "currency": "EUR", "status": "%s"}""".formatted(status)));
+					 "currency": "EUR", "timeZone": "Europe/Paris", "status": "%s"}""".formatted(status)));
 	}
 
 	private ResultActions hold(String seatId) throws Exception {

@@ -6,6 +6,9 @@ public enum Role {
 	/** Sees layouts, events, availability and reservations. */
 	VIEWER,
 
+	/** Also checks tickets in at the door. */
+	SCANNER,
+
 	/** Also edits and publishes layouts, runs events and sets prices, and confirms sales at the box office. */
 	EDITOR,
 

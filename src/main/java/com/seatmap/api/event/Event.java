@@ -32,6 +32,8 @@ public class Event {
 
 	private String currency;
 
+	private String timeZone;
+
 	@Enumerated(EnumType.STRING)
 	private EventStatus status;
 
@@ -56,11 +58,13 @@ public class Event {
 		this.createdAt = now;
 	}
 
-	void update(String name, Instant startsAt, Instant endsAt, String currency, EventStatus status, Instant now) {
+	void update(String name, Instant startsAt, Instant endsAt, String currency, String timeZone, EventStatus status,
+			Instant now) {
 		this.name = name;
 		this.startsAt = startsAt;
 		this.endsAt = endsAt;
 		this.currency = currency;
+		this.timeZone = timeZone;
 		this.status = status;
 		this.updatedAt = now;
 	}
@@ -99,6 +103,10 @@ public class Event {
 
 	public String getCurrency() {
 		return this.currency;
+	}
+
+	public String getTimeZone() {
+		return this.timeZone;
 	}
 
 	public EventStatus getStatus() {
