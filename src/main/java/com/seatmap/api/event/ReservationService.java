@@ -11,6 +11,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.seatmap.api.SeatmapProperties;
+import com.seatmap.api.account.Access;
+import com.seatmap.api.account.Role;
 import com.seatmap.api.event.EventRequests.Hold;
 import com.seatmap.api.event.EventViews.ReservationItem;
 import com.seatmap.api.event.EventViews.ReservationStatus;
@@ -19,6 +21,7 @@ import com.seatmap.api.event.ReservationRepository.SellableUnit;
 import com.seatmap.api.web.ConflictException;
 import com.seatmap.api.web.InvalidRequestException;
 import com.seatmap.api.web.NotFoundException;
+import com.seatmap.api.web.TooManyRequestsException;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +29,10 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Holding, confirming and releasing seats and standing places. A hold is all or nothing:
  * if any part of it is taken, nothing is held.
+ * <p>
+ * Guests hold without logging in; their reservation's id is what lets them see or release
+ * it, and how much they can hold is capped. Staff of the event's organization aren't capped
+ * (the box office). Only staff can confirm, until payments confirm on their own.
  */
 @Service
 public class ReservationService {
@@ -38,19 +45,32 @@ public class ReservationService {
 
 	private final SeatmapProperties properties;
 
+	private final Access access;
+
+	private final HoldRateLimiter rateLimiter;
+
 	ReservationService(EventService events, PriceRepository prices, ReservationRepository reservations,
-			SeatmapProperties properties) {
+			SeatmapProperties properties, Access access, HoldRateLimiter rateLimiter) {
 		this.events = events;
 		this.prices = prices;
 		this.reservations = reservations;
 		this.properties = properties;
+		this.access = access;
+		this.rateLimiter = rateLimiter;
 	}
 
 	@Transactional
-	public ReservationView hold(UUID eventId, Hold request) {
+	public ReservationView hold(UUID eventId, Hold request, String clientIp) {
 		Event event = this.events.find(eventId);
+		boolean staff = this.access.has(event.getOrganizationId(), Role.EDITOR);
 		if (event.getStatus() != EventStatus.ON_SALE) {
+			if (!staff && !this.access.has(event.getOrganizationId(), Role.VIEWER)) {
+				throw new NotFoundException("No event " + eventId);
+			}
 			throw new ConflictException("Tickets for this event aren't on sale");
+		}
+		if (!staff) {
+			this.rateLimiter.acquire(clientIp);
 		}
 		// Claim in id order, so two overlapping holds can't each wait for the other.
 		List<Hold.Item> items = request.items().stream().sorted(Comparator.comparing(Hold.Item::unitId)).toList();
@@ -76,9 +96,17 @@ public class ReservationService {
 		}
 
 		Instant now = EventService.now();
+		if (!staff) {
+			int requested = items.stream().mapToInt(Hold.Item::quantity).sum();
+			int held = this.reservations.countHeldByClient(eventId, clientIp, now);
+			if (held + requested > this.properties.maxHeldPerGuest()) {
+				throw new TooManyRequestsException("You can hold at most %d places at once; buy or release the ones you hold first"
+					.formatted(this.properties.maxHeldPerGuest()), this.properties.holdDuration());
+			}
+		}
 		Instant expiresAt = now.plus(this.properties.holdDuration());
 		UUID reservationId = UUID.randomUUID();
-		this.reservations.insert(reservationId, eventId, expiresAt, total, now);
+		this.reservations.insert(reservationId, eventId, expiresAt, total, clientIp, now);
 		for (Hold.Item item : items) {
 			SellableUnit unit = units.get(item.unitId());
 			if (unit.isSeat()) {
@@ -108,10 +136,12 @@ public class ReservationService {
 		return view(id);
 	}
 
-	/** Sells what the reservation holds. Confirming twice is harmless. */
+	/** Sells what the reservation holds; staff only. Confirming twice is harmless. */
 	@Transactional
 	public ReservationView confirm(UUID id) {
 		ReservationRepository.Row reservation = this.reservations.findForUpdate(id).orElseThrow(() -> notFound(id));
+		Event event = this.events.find(reservation.eventId());
+		this.access.require(event.getOrganizationId(), Role.EDITOR, () -> notFound(id));
 		if (reservation.status() == ReservationStatus.CONFIRMED) {
 			return view(id);
 		}
@@ -119,7 +149,6 @@ public class ReservationService {
 		if (reservation.status() == ReservationStatus.RELEASED || !reservation.expiresAt().isAfter(now)) {
 			throw new ConflictException("This reservation has expired or was released");
 		}
-		Event event = this.events.find(reservation.eventId());
 		if (event.getStatus() == EventStatus.CANCELLED) {
 			throw new ConflictException("This event was cancelled");
 		}

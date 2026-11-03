@@ -17,6 +17,8 @@ public class Layout {
 	@Id
 	private UUID id;
 
+	private UUID organizationId;
+
 	private String name;
 
 	private String description;
@@ -38,8 +40,9 @@ public class Layout {
 	protected Layout() {
 	}
 
-	Layout(UUID id, Instant now) {
+	Layout(UUID id, UUID organizationId, Instant now) {
 		this.id = id;
+		this.organizationId = organizationId;
 		this.createdAt = now;
 		this.updatedAt = now;
 	}
@@ -54,6 +57,10 @@ public class Layout {
 
 	public UUID getId() {
 		return this.id;
+	}
+
+	public UUID getOrganizationId() {
+		return this.organizationId;
 	}
 
 	public String getName() {

@@ -5,14 +5,20 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonRawValue;
+
 /** Response bodies of the events API. */
 final class EventViews {
 
 	private EventViews() {
 	}
 
-	record EventView(UUID id, UUID layoutId, int version, String name, Instant startsAt, Instant endsAt,
-			String currency, EventStatus status, int revision, List<Price> prices) {
+	record EventView(UUID id, UUID organizationId, UUID layoutId, int version, String name, Instant startsAt,
+			Instant endsAt, String currency, EventStatus status, int revision, List<Price> prices) {
+	}
+
+	/** An on-sale event as buyers see it, with the layout document to draw the seat map from. */
+	record PublicEvent(EventView event, @JsonRawValue String layout) {
 	}
 
 	record Price(String categoryId, String name, String color, BigDecimal price) {

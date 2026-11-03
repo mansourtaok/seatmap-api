@@ -5,14 +5,16 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.seatmap.api.TestAccounts;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -26,18 +28,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc
 class LayoutApiTests {
 
 	@Autowired
-	private MockMvc mvc;
+	private WebApplicationContext context;
 
 	@Autowired
 	private JdbcTemplate jdbc;
 
+	private MockMvc mvc;
+
 	@BeforeEach
-	void emptyDatabase() {
-		this.jdbc.execute("TRUNCATE layout CASCADE");
+	void logInAsAnAdmin() {
+		TestAccounts.emptyDatabase(this.jdbc);
+		this.mvc = TestAccounts.mockMvcAs(this.context, TestAccounts.staff(this.jdbc, "Alice", "ADMIN").user());
 	}
 
 	@Test

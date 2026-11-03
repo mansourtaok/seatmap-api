@@ -18,7 +18,10 @@ class WebConfig implements WebMvcConfigurer {
 		registry.addMapping("/api/**")
 			.allowedOrigins(this.properties.corsAllowedOrigins().toArray(String[]::new))
 			.allowedMethods("GET", "POST", "PUT", "DELETE")
-			.exposedHeaders("ETag", "Location");
+			// Lets the session cookie through when the web app runs on another origin. The
+			// Angular dev server should proxy /api instead, which keeps everything same-origin.
+			.allowCredentials(true)
+			.exposedHeaders("ETag", "Location", "Retry-After");
 	}
 
 }

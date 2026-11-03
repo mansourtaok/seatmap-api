@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -38,8 +39,9 @@ class LayoutController {
 	}
 
 	@PostMapping
-	ResponseEntity<String> create(@RequestBody JsonNode document) {
-		Layout layout = this.service.create(document);
+	ResponseEntity<String> create(@RequestBody JsonNode document,
+			@RequestParam(required = false) UUID organizationId) {
+		Layout layout = this.service.create(document, organizationId);
 		return ResponseEntity.created(URI.create("/api/layouts/" + layout.getId()))
 			.eTag(Revisions.eTag(layout.getDraftRevision()))
 			.contentType(MediaType.APPLICATION_JSON)
@@ -108,7 +110,7 @@ class LayoutController {
 
 	@GetMapping("/{id}/assets/{assetId}")
 	ResponseEntity<byte[]> asset(@PathVariable UUID id, @PathVariable String assetId) {
-		AssetRepository.StoredAsset asset = this.service.asset(id, assetId);
+		StoredAsset asset = this.service.asset(id, assetId);
 		return ResponseEntity.ok()
 			.contentType(MediaType.parseMediaType(asset.mimeType()))
 			.eTag(asset.sha256())

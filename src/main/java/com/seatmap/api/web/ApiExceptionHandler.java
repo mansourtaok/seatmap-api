@@ -2,8 +2,10 @@ package com.seatmap.api.web;
 
 import java.util.List;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,6 +30,23 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	ProblemDetail handle(ObjectOptimisticLockingFailureException ex) {
 		return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
 				"It was changed by someone else; reload it before saving");
+	}
+
+	@ExceptionHandler
+	ProblemDetail handle(UnauthorizedException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+	}
+
+	@ExceptionHandler
+	ProblemDetail handle(ForbiddenException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
+	}
+
+	@ExceptionHandler
+	ResponseEntity<ProblemDetail> handle(TooManyRequestsException ex) {
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+			.header(HttpHeaders.RETRY_AFTER, String.valueOf(Math.max(1, ex.getRetryAfter().toSeconds())))
+			.body(ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage()));
 	}
 
 	@ExceptionHandler

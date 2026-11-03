@@ -36,6 +36,26 @@ Claude API for the AI designer.
 
    Health check: <http://localhost:8080/actuator/health>
 
+## Accounts and access
+
+- **Staff** log in with email and password (`POST /api/auth/login`). The session lives in
+  Postgres (Spring Session) and the browser gets an HttpOnly `SESSION` cookie.
+  Passwords are bcrypt hashes. Ten failed logins in a row lock the account for 15 minutes.
+- **CSRF**: every response sets a readable `XSRF-TOKEN` cookie. Changes must send it back
+  in an `X-XSRF-TOKEN` header, which Angular's `HttpClient` does by itself. Serve the web app
+  and `/api` from the same origin; in development, use the Angular dev-server proxy.
+- **Organizations** own layouts and events. Members have a role: `VIEWER` (read),
+  `EDITOR` (edit, publish, run events, confirm at the box office) or `ADMIN` (also members
+  and deleting layouts). Another organization's items answer `404`. An organization always
+  keeps at least one admin.
+- **Buyers** need no account. They see events that are on sale (`/api/public/...`), hold
+  and release seats, and use the reservation id as their key. A guest (by IP address) can
+  make 10 holds a minute and hold 20 places per event at once (`seatmap.holds-per-minute`,
+  `seatmap.max-held-per-guest`). Staff aren't limited. Only staff can confirm, until
+  payments do it themselves.
+- Behind a reverse proxy, set `server.forward-headers-strategy` so the guest limits see
+  the client's address. Set `SEATMAP_SECURE_COOKIES=true` when serving over HTTPS.
+
 ## Model
 
 - **layout**: a seat map and its editable draft (the designer document, `jsonb`).
@@ -69,7 +89,17 @@ Geometry rules stay in the designer.
 
 | Method | Path | |
 |---|---|---|
-| `POST` | `/api/layouts` | Create from a designer document; returns it with its new id |
+| `POST` | `/api/auth/register` | Sign up: `email`, `password` (10+ characters), `displayName`, `organizationName`; logs in |
+| `POST` | `/api/auth/login` | `email`, `password`; starts a session |
+| `POST` | `/api/auth/logout` | Ends the session |
+| `GET` | `/api/auth/me` | The logged-in user and their organizations |
+| `GET` / `POST` | `/api/organizations` | Your organizations / create another |
+| `GET` / `POST` | `/api/organizations/{id}/members` | List / add an existing user by `email` and `role` (admin) |
+| `PUT` / `DELETE` | `/api/organizations/{id}/members/{userId}` | Change role / remove (admin; anyone can leave) |
+| `GET` | `/api/public/events` | Events on sale (no login) |
+| `GET` | `/api/public/events/{id}` | An on-sale event with its prices and layout document |
+| `GET` | `/api/public/events/{id}/assets/{assetId}` | Its floor-plan image |
+| `POST` | `/api/layouts` | Create from a designer document (`?organizationId=` if you're in several) |
 | `GET` | `/api/layouts` | List layouts |
 | `GET` | `/api/layouts/{id}` | Draft document (ETag = revision) |
 | `PUT` | `/api/layouts/{id}/draft` | Save the draft; `If-Match` required |

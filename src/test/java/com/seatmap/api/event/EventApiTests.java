@@ -16,16 +16,17 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.seatmap.api.TestAccounts;
 import com.seatmap.api.web.ConflictException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -43,7 +44,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * and a five-place standing area (GA).
  */
 @SpringBootTest
-@AutoConfigureMockMvc
 class EventApiTests {
 
 	private static final JsonMapper JSON = JsonMapper.builder().build();
@@ -51,6 +51,8 @@ class EventApiTests {
 	private static final String SEAT_7 = "North Stand · Block N1 · Row 3 · Seat 7";
 
 	@Autowired
+	private WebApplicationContext context;
+
 	private MockMvc mvc;
 
 	@Autowired
@@ -63,7 +65,8 @@ class EventApiTests {
 
 	@BeforeEach
 	void createEvent() throws Exception {
-		this.jdbc.execute("TRUNCATE layout CASCADE");
+		TestAccounts.emptyDatabase(this.jdbc);
+		this.mvc = TestAccounts.mockMvcAs(this.context, TestAccounts.staff(this.jdbc, "Alice", "ADMIN").user());
 		String layoutId = read(this.mvc
 			.perform(post("/api/layouts").contentType(MediaType.APPLICATION_JSON).content(layout().toString()))
 			.andExpect(status().isCreated())).get("id").asString();
@@ -228,10 +231,12 @@ class EventApiTests {
 		CountDownLatch start = new CountDownLatch(1);
 		List<Callable<Boolean>> attempts = new ArrayList<>();
 		for (int i = 0; i < buyers; i++) {
+			// Guests, each from their own address so the per-guest limits don't decide the race.
+			String clientIp = "10.0.0." + i;
 			attempts.add(() -> {
 				start.await();
 				try {
-					this.reservations.hold(event, request);
+					this.reservations.hold(event, request, clientIp);
 					return true;
 				}
 				catch (ConflictException ex) {

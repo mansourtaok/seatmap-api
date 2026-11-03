@@ -1,5 +1,6 @@
 package com.seatmap.api.layout;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,9 +18,9 @@ interface LayoutRepository extends JpaRepository<Layout, UUID> {
 	Optional<Layout> findForUpdate(UUID id);
 
 	@Query("""
-			select new com.seatmap.api.layout.LayoutSummary(l.id, l.name, l.description, l.draftRevision,
+			select new com.seatmap.api.layout.LayoutSummary(l.id, l.organizationId, l.name, l.description, l.draftRevision,
 				(select max(v.versionNumber) from LayoutVersion v where v.layoutId = l.id), l.createdAt, l.updatedAt)
-			from Layout l order by l.updatedAt desc""")
-	List<LayoutSummary> findSummaries();
+			from Layout l where l.organizationId in :organizationIds order by l.updatedAt desc""")
+	List<LayoutSummary> findSummaries(Collection<UUID> organizationIds);
 
 }

@@ -40,7 +40,4 @@ class AssetRepository {
 			.update();
 	}
 
-	record StoredAsset(String mimeType, String sha256, byte[] bytes) {
-	}
-
 }

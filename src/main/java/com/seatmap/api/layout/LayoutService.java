@@ -12,6 +12,8 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import com.seatmap.api.SeatmapProperties;
+import com.seatmap.api.account.Access;
+import com.seatmap.api.account.Role;
 import com.seatmap.api.web.ConflictException;
 import com.seatmap.api.web.InvalidRequestException;
 import com.seatmap.api.web.NotFoundException;
@@ -46,39 +48,57 @@ public class LayoutService {
 
 	private final SeatmapProperties properties;
 
+	private final Access access;
+
 	LayoutService(LayoutRepository layouts, LayoutVersionRepository versions, InventoryRepository inventory,
-			AssetRepository assets, JsonMapper jsonMapper, SeatmapProperties properties) {
+			AssetRepository assets, JsonMapper jsonMapper, SeatmapProperties properties, Access access) {
 		this.layouts = layouts;
 		this.versions = versions;
 		this.inventory = inventory;
 		this.assets = assets;
 		this.jsonMapper = jsonMapper;
 		this.properties = properties;
+		this.access = access;
 	}
 
-	/** Stores a new layout. Its id is assigned here and written into the document. */
+	/**
+	 * Stores a new layout in an organization. Its id is assigned here and written into the
+	 * document. {@code organizationId} may be left out by someone in just one organization.
+	 */
 	@Transactional
-	public Layout create(JsonNode document) {
+	public Layout create(JsonNode document, UUID organizationId) {
+		UUID organization = (organizationId != null) ? organizationId : onlyOrganization();
+		this.access.require(organization, Role.EDITOR, () -> new NotFoundException("No organization " + organization));
 		Instant now = now();
-		Layout layout = new Layout(UUID.randomUUID(), now);
+		Layout layout = new Layout(UUID.randomUUID(), organization, now);
 		applyDraft(layout, document, now);
 		return this.layouts.saveAndFlush(layout);
 	}
 
+	/** The layouts of the current user's organizations, most recently changed first. */
 	@Transactional(readOnly = true)
 	public List<LayoutSummary> list() {
-		return this.layouts.findSummaries();
+		List<UUID> organizations = this.access.organizationIds();
+		return organizations.isEmpty() ? List.of() : this.layouts.findSummaries(organizations);
 	}
 
 	@Transactional(readOnly = true)
 	public Layout get(UUID id) {
-		return this.layouts.findById(id).orElseThrow(() -> layoutNotFound(id));
+		return find(id, Role.VIEWER);
+	}
+
+	/** The layout, if the current user has at least {@code role} in its organization. */
+	@Transactional(readOnly = true)
+	public Layout find(UUID id, Role role) {
+		Layout layout = this.layouts.findById(id).orElseThrow(() -> layoutNotFound(id));
+		this.access.require(layout.getOrganizationId(), role, () -> layoutNotFound(id));
+		return layout;
 	}
 
 	/** Replaces the draft, provided it is still at {@code expectedRevision}. */
 	@Transactional
 	public Layout saveDraft(UUID id, int expectedRevision, JsonNode document) {
-		Layout layout = get(id);
+		Layout layout = find(id, Role.EDITOR);
 		requireRevision(layout, expectedRevision);
 		JsonNode documentId = document.path("id");
 		if (documentId.isString() && !documentId.asString().equals(id.toString())) {
@@ -94,6 +114,7 @@ public class LayoutService {
 	@Transactional
 	public void delete(UUID id) {
 		Layout layout = this.layouts.findForUpdate(id).orElseThrow(() -> layoutNotFound(id));
+		this.access.require(layout.getOrganizationId(), Role.ADMIN, () -> layoutNotFound(id));
 		if (this.versions.existsByLayoutId(id)) {
 			throw new ConflictException("This layout has published versions, so it can't be deleted");
 		}
@@ -107,6 +128,7 @@ public class LayoutService {
 	@Transactional
 	public VersionSummary publish(UUID id, Integer expectedRevision) {
 		Layout layout = this.layouts.findForUpdate(id).orElseThrow(() -> layoutNotFound(id));
+		this.access.require(layout.getOrganizationId(), Role.EDITOR, () -> layoutNotFound(id));
 		if (expectedRevision != null) {
 			requireRevision(layout, expectedRevision);
 		}
@@ -125,14 +147,13 @@ public class LayoutService {
 
 	@Transactional(readOnly = true)
 	public List<VersionSummary> versions(UUID id) {
-		if (!this.layouts.existsById(id)) {
-			throw layoutNotFound(id);
-		}
+		find(id, Role.VIEWER);
 		return this.versions.findSummaries(id);
 	}
 
 	@Transactional(readOnly = true)
 	public LayoutVersion version(UUID id, int versionNumber) {
+		find(id, Role.VIEWER);
 		return this.versions.findByLayoutIdAndVersionNumber(id, versionNumber)
 			.orElseThrow(() -> new NotFoundException("Layout %s has no version %d".formatted(id, versionNumber)));
 	}
@@ -150,9 +171,7 @@ public class LayoutService {
 	 */
 	@Transactional
 	public boolean putAsset(UUID id, String assetId, String mimeType, byte[] bytes) {
-		if (!this.layouts.existsById(id)) {
-			throw layoutNotFound(id);
-		}
+		find(id, Role.EDITOR);
 		if (!ASSET_ID.matcher(assetId).matches()) {
 			throw new InvalidRequestException("Asset ids may only use letters, digits, '.', '_' and '-'");
 		}
@@ -175,7 +194,8 @@ public class LayoutService {
 	}
 
 	@Transactional(readOnly = true)
-	public AssetRepository.StoredAsset asset(UUID id, String assetId) {
+	public StoredAsset asset(UUID id, String assetId) {
+		find(id, Role.VIEWER);
 		return this.assets.find(id, assetId)
 			.orElseThrow(() -> new NotFoundException("Layout %s has no asset %s".formatted(id, assetId)));
 	}
@@ -191,6 +211,15 @@ public class LayoutService {
 		JsonNode description = draft.path("description");
 		layout.replaceDraft(draft.get("name").asString(), description.isString() ? description.asString() : null, json,
 				draft.get("schemaVersion").asInt(), now);
+	}
+
+	private UUID onlyOrganization() {
+		List<UUID> organizations = this.access.organizationIds();
+		if (organizations.size() != 1) {
+			throw new InvalidRequestException(organizations.isEmpty() ? "You aren't in any organization"
+					: "You're in several organizations; say which one with ?organizationId=");
+		}
+		return organizations.getFirst();
 	}
 
 	private static void requireValid(JsonNode document) {

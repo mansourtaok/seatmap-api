@@ -66,12 +66,23 @@ class ReservationRepository {
 		return statuses;
 	}
 
-	void insert(UUID id, UUID eventId, Instant expiresAt, BigDecimal total, Instant now) {
+	void insert(UUID id, UUID eventId, Instant expiresAt, BigDecimal total, String clientIp, Instant now) {
 		this.jdbcClient.sql("""
-				INSERT INTO reservation (id, event_id, status, expires_at, total, created_at)
-				VALUES (?, ?, 'HELD', ?, ?, ?)""")
-			.params(id, eventId, Timestamp.from(expiresAt), total, Timestamp.from(now))
+				INSERT INTO reservation (id, event_id, status, expires_at, total, client_ip, created_at)
+				VALUES (?, ?, 'HELD', ?, ?, ?, ?)""")
+			.params(id, eventId, Timestamp.from(expiresAt), total, clientIp, Timestamp.from(now))
 			.update();
+	}
+
+	/** Places a client currently holds at an event. */
+	int countHeldByClient(UUID eventId, String clientIp, Instant now) {
+		return this.jdbcClient.sql("""
+				SELECT coalesce(sum(i.quantity), 0) FROM reservation r
+				JOIN reservation_item i ON i.reservation_id = r.id
+				WHERE r.event_id = ? AND r.client_ip = ? AND r.status = 'HELD' AND r.expires_at > ?""")
+			.params(eventId, clientIp, Timestamp.from(now))
+			.query(Integer.class)
+			.single();
 	}
 
 	void insertItem(UUID reservationId, UUID eventId, String unitId, int quantity, String categoryId,

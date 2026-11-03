@@ -16,6 +16,8 @@ public class Event {
 	@Id
 	private UUID id;
 
+	private UUID organizationId;
+
 	private UUID layoutId;
 
 	private UUID versionId;
@@ -44,8 +46,9 @@ public class Event {
 	protected Event() {
 	}
 
-	Event(UUID id, UUID layoutId, UUID versionId, int versionNumber, Instant now) {
+	Event(UUID id, UUID organizationId, UUID layoutId, UUID versionId, int versionNumber, Instant now) {
 		this.id = id;
+		this.organizationId = organizationId;
 		this.layoutId = layoutId;
 		this.versionId = versionId;
 		this.versionNumber = versionNumber;
@@ -64,6 +67,10 @@ public class Event {
 
 	public UUID getId() {
 		return this.id;
+	}
+
+	public UUID getOrganizationId() {
+		return this.organizationId;
 	}
 
 	public UUID getLayoutId() {

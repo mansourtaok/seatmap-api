@@ -51,6 +51,10 @@ public class LayoutVersion {
 		return this.id;
 	}
 
+	public UUID getLayoutId() {
+		return this.layoutId;
+	}
+
 	public String getDocument() {
 		return this.document;
 	}
