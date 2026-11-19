@@ -55,6 +55,8 @@ tasks.withType<Test> {
 	// would pick up work that another context's test is waiting for.
 	environment("SEATMAP_TICKETS_MAIL_SEND_INTERVAL", "1h")
 	environment("SEATMAP_HOLD_EXPIRY_INTERVAL", "1h")
+	// On in every test context (so they share one), whatever config/application.properties says.
+	environment("SEATMAP_DEV_DATA_RESET_ENABLED", "true")
 	// A throwaway signing key, so tests never need the real one.
 	environment("SEATMAP_TICKET_KEY", "test-only-ticket-key-0123456789abcdef")
 }
