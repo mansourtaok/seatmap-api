@@ -17,10 +17,16 @@ import tools.jackson.databind.JsonNode;
  */
 final class LayoutDocumentValidator {
 
-	static final int SCHEMA_VERSION = 3;
+	/**
+	 * Newest document format this server understands. Version 4 only added optional heights
+	 * for the 3D view, so version 3 documents are still accepted as they are.
+	 */
+	static final int SCHEMA_VERSION = 4;
+
+	static final int OLDEST_SCHEMA_VERSION = 3;
 
 	static final Set<String> OBJECT_TYPES = Set.of("STAGE", "SHAPE", "TEXT", "TABLE_ROUND", "TABLE_RECT", "SEAT",
-			"SEAT_ROW", "SECTION", "STANDING_AREA", "PASSAGE", "WALL", "DOOR", "PLAYING_SURFACE", "STAND");
+			"SEAT_ROW", "SECTION", "STANDING_AREA", "PASSAGE", "WALL", "DOOR", "BOOTH", "PLAYING_SURFACE", "STAND");
 
 	/** Types that own seats through {@code seatIds}. */
 	static final Set<String> SEAT_OWNER_TYPES = Set.of("TABLE_ROUND", "TABLE_RECT", "SEAT_ROW", "STAND");
@@ -44,10 +50,10 @@ final class LayoutDocumentValidator {
 			problems.add("schemaVersion is missing");
 			return problems.list();
 		}
-		if (schemaVersion.asInt() != SCHEMA_VERSION) {
-			problems.add(("Schema version %d is not supported; this server accepts version %d. "
+		if (schemaVersion.asInt() < OLDEST_SCHEMA_VERSION || schemaVersion.asInt() > SCHEMA_VERSION) {
+			problems.add(("Schema version %d is not supported; this server accepts versions %d to %d. "
 					+ "Open and save the layout in the current designer to upgrade it.")
-				.formatted(schemaVersion.asInt(), SCHEMA_VERSION));
+				.formatted(schemaVersion.asInt(), OLDEST_SCHEMA_VERSION, SCHEMA_VERSION));
 			return problems.list();
 		}
 		if (!isNonBlankString(document.get("name"))) {

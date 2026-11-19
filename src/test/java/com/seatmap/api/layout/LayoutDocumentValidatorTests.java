@@ -28,6 +28,22 @@ class LayoutDocumentValidatorTests {
 		assertThat(LayoutDocumentValidator.validate(document)).singleElement()
 			.asString()
 			.contains("Schema version 2 is not supported");
+		assertThat(LayoutDocumentValidator.validate(document.put("schemaVersion", 5))).singleElement()
+			.asString()
+			.contains("Schema version 5 is not supported");
+	}
+
+	@Test
+	void acceptsVersion3AndVersion4WithHeights() {
+		ObjectNode stand = TestDocuments.stand();
+		assertThat(LayoutDocumentValidator.validate(stand.put("schemaVersion", 3))).isEmpty();
+		stand.put("schemaVersion", 4);
+		for (var object : stand.get("objects")) {
+			if ("STAND".equals(object.get("type").asString())) {
+				((ObjectNode) object).put("elevation", 2.5).put("rake", 0.4);
+			}
+		}
+		assertThat(LayoutDocumentValidator.validate(stand)).isEmpty();
 	}
 
 	@Test
