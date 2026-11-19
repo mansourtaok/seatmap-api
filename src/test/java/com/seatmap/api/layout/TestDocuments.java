@@ -10,7 +10,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 /** The designer's sample templates (converted to schema 3), plus a small stand. */
-final class TestDocuments {
+public final class TestDocuments {
 
 	static final JsonMapper JSON = JsonMapper.builder().build();
 
@@ -18,7 +18,7 @@ final class TestDocuments {
 	}
 
 	/** small-theater (8 rows, 112 seats), banquet-hall (8 tables, 80 seats) or conference-standing. */
-	static ObjectNode load(String name) {
+	public static ObjectNode load(String name) {
 		try (InputStream in = TestDocuments.class.getResourceAsStream("/layouts/" + name + ".json")) {
 			return (ObjectNode) JSON.readTree(in);
 		}

@@ -1,0 +1,771 @@
+[
+ {
+  "name": "new_venue",
+  "description": "Replace the whole layout with an empty venue of this size (meters).",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "width": {
+     "type": "number"
+    },
+    "height": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "name",
+    "width",
+    "height"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "apply_template",
+  "description": "Replace the whole layout with a generated sports venue (stands, VIP areas, exits included). Use when no exact capacity is asked for.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "template": {
+     "type": "string",
+     "enum": [
+      "basketball",
+      "football",
+      "oval"
+     ]
+    },
+    "name": {
+     "type": "string"
+    },
+    "basketball": {
+     "type": "object",
+     "properties": {
+      "layout": {
+       "type": "string",
+       "enum": [
+        "stands",
+        "bowl"
+       ]
+      },
+      "lowerRows": {
+       "type": "integer"
+      },
+      "upperRows": {
+       "type": "integer"
+      },
+      "upperTier": {
+       "type": "boolean"
+      },
+      "courtside": {
+       "type": "boolean"
+      },
+      "vipAreas": {
+       "type": "boolean"
+      },
+      "sidelineStands": {
+       "type": "boolean"
+      },
+      "baselineStands": {
+       "type": "boolean"
+      },
+      "presetId": {
+       "type": "string",
+       "enum": [
+        "fiba",
+        "nba"
+       ]
+      }
+     },
+     "required": [],
+     "additionalProperties": false
+    },
+    "football": {
+     "type": "object",
+     "properties": {
+      "presetId": {
+       "type": "string",
+       "enum": [
+        "fifa-recommended",
+        "international-min",
+        "international-max"
+       ]
+      },
+      "stands": {
+       "type": "object",
+       "properties": {
+        "north": {
+         "type": "object",
+         "properties": {
+          "enabled": {
+           "type": "boolean"
+          },
+          "blocks": {
+           "type": "integer"
+          },
+          "rowsPerBlock": {
+           "type": "integer"
+          },
+          "seatsPerRow": {
+           "type": "integer"
+          }
+         },
+         "required": [],
+         "additionalProperties": false
+        },
+        "south": {
+         "type": "object",
+         "properties": {
+          "enabled": {
+           "type": "boolean"
+          },
+          "blocks": {
+           "type": "integer"
+          },
+          "rowsPerBlock": {
+           "type": "integer"
+          },
+          "seatsPerRow": {
+           "type": "integer"
+          }
+         },
+         "required": [],
+         "additionalProperties": false
+        },
+        "east": {
+         "type": "object",
+         "properties": {
+          "enabled": {
+           "type": "boolean"
+          },
+          "blocks": {
+           "type": "integer"
+          },
+          "rowsPerBlock": {
+           "type": "integer"
+          },
+          "seatsPerRow": {
+           "type": "integer"
+          }
+         },
+         "required": [],
+         "additionalProperties": false
+        },
+        "west": {
+         "type": "object",
+         "properties": {
+          "enabled": {
+           "type": "boolean"
+          },
+          "blocks": {
+           "type": "integer"
+          },
+          "rowsPerBlock": {
+           "type": "integer"
+          },
+          "seatsPerRow": {
+           "type": "integer"
+          }
+         },
+         "required": [],
+         "additionalProperties": false
+        }
+       },
+       "required": [],
+       "additionalProperties": false
+      },
+      "vipArea": {
+       "type": "boolean"
+      },
+      "accessibleAreas": {
+       "type": "boolean"
+      }
+     },
+     "required": [],
+     "additionalProperties": false
+    },
+    "oval": {
+     "type": "object",
+     "properties": {
+      "capacity": {
+       "type": "integer"
+      },
+      "numberedRows": {
+       "type": "integer"
+      }
+     },
+     "required": [],
+     "additionalProperties": false
+    }
+   },
+   "required": [
+    "template"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "set_venue",
+  "description": "Rename or resize the venue (meters).",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "width": {
+     "type": "number"
+    },
+    "height": {
+     "type": "number"
+    }
+   },
+   "required": [],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "add_stage",
+  "description": "Add a stage. x/y is its center.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "Name for the new object so later calls can refer to it, like \"new:main-stand\" (lowercase letters, digits, dashes)."
+    },
+    "name": {
+     "type": "string"
+    },
+    "x": {
+     "type": "number"
+    },
+    "y": {
+     "type": "number"
+    },
+    "width": {
+     "type": "number"
+    },
+    "height": {
+     "type": "number"
+    },
+    "rotation": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "x",
+    "y",
+    "width",
+    "height"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "add_stand",
+  "description": "Add a block of numbered seating rows (a seating section); the designer generates the seats. x/y is its center, or the center of curvature for a curved stand.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "Name for the new object so later calls can refer to it, like \"new:main-stand\" (lowercase letters, digits, dashes)."
+    },
+    "name": {
+     "type": "string"
+    },
+    "x": {
+     "type": "number"
+    },
+    "y": {
+     "type": "number"
+    },
+    "rotation": {
+     "type": "number",
+     "description": "0: front row on top, audience facing up; 180 facing down; 90 facing right; -90 facing left."
+    },
+    "blocks": {
+     "type": "integer"
+    },
+    "rowsPerBlock": {
+     "type": "integer"
+    },
+    "seatsPerRow": {
+     "type": "integer"
+    },
+    "seatSpacing": {
+     "type": "number"
+    },
+    "rowSpacing": {
+     "type": "number"
+    },
+    "aisleWidth": {
+     "type": "number"
+    },
+    "blockPrefix": {
+     "type": "string"
+    },
+    "curve": {
+     "type": "object",
+     "properties": {
+      "innerRadius": {
+       "type": "number",
+       "description": "Meters from the stand's x/y (center of curvature) to its front edge."
+      },
+      "sweep": {
+       "type": "number",
+       "description": "Degrees the stand sweeps clockwise; 180 is a semicircle."
+      }
+     },
+     "required": [
+      "innerRadius",
+      "sweep"
+     ],
+     "additionalProperties": false
+    },
+    "elevation": {
+     "type": "number",
+     "description": "Height in meters for the 3D view: a stand's front row, a stage's deck, an area's or table's floor. Default: on the floor (stages 1 m)."
+    },
+    "rake": {
+     "type": "number",
+     "description": "Stands only: how many meters higher each row is than the one in front. Default 0.4 (about 27° at 0.8 m row spacing); 0 is flat."
+    }
+   },
+   "required": [
+    "x",
+    "y",
+    "blocks",
+    "rowsPerBlock",
+    "seatsPerRow"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "add_tables",
+  "description": "Add a grid of tables with chairs; x/y is the grid's center. With ref R the tables are R-1, R-2… and R means all of them.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "Name for the new object so later calls can refer to it, like \"new:main-stand\" (lowercase letters, digits, dashes)."
+    },
+    "namePrefix": {
+     "type": "string"
+    },
+    "shape": {
+     "type": "string",
+     "enum": [
+      "round",
+      "rect"
+     ]
+    },
+    "columns": {
+     "type": "integer"
+    },
+    "rows": {
+     "type": "integer"
+    },
+    "x": {
+     "type": "number"
+    },
+    "y": {
+     "type": "number"
+    },
+    "spacingX": {
+     "type": "number",
+     "description": "Center-to-center distance between tables, meters."
+    },
+    "spacingY": {
+     "type": "number"
+    },
+    "seatsPerTable": {
+     "type": "integer"
+    },
+    "diameter": {
+     "type": "number"
+    },
+    "width": {
+     "type": "number"
+    },
+    "height": {
+     "type": "number"
+    },
+    "rotation": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "shape",
+    "columns",
+    "rows",
+    "x",
+    "y",
+    "spacingX",
+    "spacingY",
+    "seatsPerTable"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "add_area",
+  "description": "Add an area sold by capacity rather than numbered seats: a section (optionally a VIP, accessible or restricted zone) or a standing area.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "Name for the new object so later calls can refer to it, like \"new:main-stand\" (lowercase letters, digits, dashes)."
+    },
+    "kind": {
+     "type": "string",
+     "enum": [
+      "section",
+      "standing"
+     ]
+    },
+    "name": {
+     "type": "string"
+    },
+    "x": {
+     "type": "number"
+    },
+    "y": {
+     "type": "number"
+    },
+    "width": {
+     "type": "number"
+    },
+    "height": {
+     "type": "number"
+    },
+    "capacity": {
+     "type": "integer"
+    },
+    "zone": {
+     "type": "string",
+     "enum": [
+      "vip",
+      "accessible",
+      "restricted"
+     ]
+    },
+    "rotation": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "kind",
+    "x",
+    "y",
+    "width",
+    "height",
+    "capacity"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "add_playing_surface",
+  "description": "Add a basketball court or football pitch with its markings; its length runs along x.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "Name for the new object so later calls can refer to it, like \"new:main-stand\" (lowercase letters, digits, dashes)."
+    },
+    "sport": {
+     "type": "string",
+     "enum": [
+      "basketball",
+      "football"
+     ]
+    },
+    "presetId": {
+     "type": "string"
+    },
+    "x": {
+     "type": "number"
+    },
+    "y": {
+     "type": "number"
+    },
+    "rotation": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "sport",
+    "x",
+    "y"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "update_object",
+  "description": "Change some properties of one object; only the fields given change. To change a stand's capacity, change its seating.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "target": {
+     "type": "string",
+     "description": "An existing object's handle from the venue context, or a ref created by an earlier call."
+    },
+    "name": {
+     "type": "string"
+    },
+    "x": {
+     "type": "number"
+    },
+    "y": {
+     "type": "number"
+    },
+    "rotation": {
+     "type": "number"
+    },
+    "width": {
+     "type": "number"
+    },
+    "height": {
+     "type": "number"
+    },
+    "diameter": {
+     "type": "number"
+    },
+    "capacity": {
+     "type": "integer"
+    },
+    "zone": {
+     "type": "string",
+     "enum": [
+      "vip",
+      "accessible",
+      "restricted"
+     ]
+    },
+    "seating": {
+     "type": "object",
+     "properties": {
+      "blocks": {
+       "type": "integer"
+      },
+      "rowsPerBlock": {
+       "type": "integer"
+      },
+      "seatsPerRow": {
+       "type": "integer"
+      },
+      "seatSpacing": {
+       "type": "number"
+      },
+      "rowSpacing": {
+       "type": "number"
+      },
+      "aisleWidth": {
+       "type": "number"
+      },
+      "blockPrefix": {
+       "type": "string"
+      },
+      "firstRowLabel": {
+       "type": "string"
+      }
+     },
+     "required": [],
+     "additionalProperties": false
+    },
+    "curve": {
+     "type": "object",
+     "properties": {
+      "innerRadius": {
+       "type": "number",
+       "description": "Meters from the stand's x/y (center of curvature) to its front edge."
+      },
+      "sweep": {
+       "type": "number",
+       "description": "Degrees the stand sweeps clockwise; 180 is a semicircle."
+      }
+     },
+     "required": [
+      "innerRadius",
+      "sweep"
+     ],
+     "additionalProperties": false
+    },
+    "seatsPerTable": {
+     "type": "integer"
+    },
+    "elevation": {
+     "type": "number",
+     "description": "Height in meters for the 3D view: a stand's front row, a stage's deck, an area's or table's floor. Default: on the floor (stages 1 m)."
+    },
+    "rake": {
+     "type": "number",
+     "description": "Stands only: how many meters higher each row is than the one in front. Default 0.4 (about 27° at 0.8 m row spacing); 0 is flat."
+    }
+   },
+   "required": [
+    "target"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "move_objects",
+  "description": "Move objects (with their seats) by an offset in meters.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "targets": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "description": "An existing object's handle from the venue context, or a ref created by an earlier call."
+     }
+    },
+    "dx": {
+     "type": "number"
+    },
+    "dy": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "targets",
+    "dx",
+    "dy"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "remove_objects",
+  "description": "Remove objects, with their seats.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "targets": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "description": "An existing object's handle from the venue context, or a ref created by an earlier call."
+     }
+    }
+   },
+   "required": [
+    "targets"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "upsert_ticket_category",
+  "description": "Add a ticket category, or change one (by id, or one with the same name). Price is in the event's currency.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "Name for the new object so later calls can refer to it, like \"new:main-stand\" (lowercase letters, digits, dashes)."
+    },
+    "id": {
+     "type": "string"
+    },
+    "name": {
+     "type": "string"
+    },
+    "color": {
+     "type": "string",
+     "description": "#rrggbb"
+    },
+    "price": {
+     "type": "number"
+    }
+   },
+   "required": [
+    "name"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "assign_category",
+  "description": "Give objects, and through them their seats, a ticket category (an id or ref; null clears it).",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "targets": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "description": "An existing object's handle from the venue context, or a ref created by an earlier call."
+     }
+    },
+    "category": {
+     "type": [
+      "string",
+      "null"
+     ]
+    }
+   },
+   "required": [
+    "targets",
+    "category"
+   ],
+   "additionalProperties": false
+  }
+ },
+ {
+  "name": "finish",
+  "description": "Call last, exactly once, to end your answer.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "status": {
+     "type": "string",
+     "enum": [
+      "SUCCESS",
+      "NEEDS_CLARIFICATION",
+      "CANNOT_DO"
+     ]
+    },
+    "message": {
+     "type": "string",
+     "description": "Shown to the organizer: what you did, with seat counts, in their language."
+    },
+    "question": {
+     "type": "string",
+     "description": "NEEDS_CLARIFICATION: the question to ask."
+    },
+    "suggestedAnswers": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "description": "NEEDS_CLARIFICATION: up to 4 short answers to offer."
+    },
+    "warnings": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     },
+     "description": "Things the organizer should check."
+    }
+   },
+   "required": [
+    "status",
+    "message",
+    "warnings"
+   ],
+   "additionalProperties": false
+  }
+ }
+]

@@ -2,13 +2,19 @@ package com.seatmap.api.web;
 
 import java.util.List;
 
+import com.seatmap.api.ai.AiAllowanceUsedException;
+import com.seatmap.api.ai.AiUnavailableException;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /** Turns the API's exceptions into RFC 9457 problem details. */
@@ -50,9 +56,43 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 	}
 
 	@ExceptionHandler
+	ProblemDetail handle(PayloadTooLargeException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.CONTENT_TOO_LARGE, ex.getMessage());
+	}
+
+	/** The organization used this month's AI allowance; says when it renews. */
+	@ExceptionHandler
+	ProblemDetail handle(AiAllowanceUsedException ex) {
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.PAYMENT_REQUIRED, ex.getMessage());
+		problem.setProperty("resetsAt", ex.getResetsAt().toString());
+		return problem;
+	}
+
+	/** The AI service failed or timed out: the user can try again later. */
+	@ExceptionHandler
+	ProblemDetail handle(AiUnavailableException ex) {
+		return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage());
+	}
+
+	@ExceptionHandler
 	ProblemDetail handle(InvalidRequestException ex) {
 		return withProblems(ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, ex.getMessage()),
 				ex.getProblems());
+	}
+
+	/** A {@code @Valid} body failed: say which fields and why, e.g. "password: size must be between 10 and 128". */
+	@Override
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+			HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+		List<String> problems = ex.getBindingResult()
+			.getFieldErrors()
+			.stream()
+			.map((error) -> error.getField() + ": " + error.getDefaultMessage())
+			.sorted()
+			.toList();
+		ProblemDetail problem = withProblems(ProblemDetail.forStatusAndDetail(status, "Some fields are invalid"),
+				problems);
+		return handleExceptionInternal(ex, problem, headers, status, request);
 	}
 
 	private static ProblemDetail withProblems(ProblemDetail problem, List<String> problems) {

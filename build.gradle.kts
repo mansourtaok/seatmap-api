@@ -30,6 +30,8 @@ dependencies {
 	implementation("org.flywaydb:flyway-database-postgresql")
 	implementation("org.apache.pdfbox:pdfbox:3.0.8")
 	implementation("com.google.zxing:core:3.5.4")
+	// Calls Claude for the designer's AI assistant (the API key stays on the server).
+	implementation("com.anthropic:anthropic-java:3.3.0")
 	runtimeOnly("org.postgresql:postgresql")
 	testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
