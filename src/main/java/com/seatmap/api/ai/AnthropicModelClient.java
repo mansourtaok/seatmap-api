@@ -233,7 +233,8 @@ class AnthropicModelClient implements AiModelClient, DisposableBean {
 			throw new AiUnavailableException("The AI service is unavailable; try again shortly", ex);
 		}
 		catch (AnthropicIoException ex) {
-			logger.warn("Claude call failed: {}", ex.getMessage());
+			// With the whole cause chain: "Request failed" alone says nothing about why.
+			logger.warn("Claude call failed: {}", ex.getMessage(), ex);
 			throw new AiUnavailableException("The AI service didn't answer in time; try again", ex);
 		}
 	}
