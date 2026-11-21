@@ -243,7 +243,7 @@ class VenueAssistantApiTests {
 		});
 		// The designer's operations (ai-contract.ts), as tool names.
 		assertThat(names).containsExactlyInAnyOrder("new_venue", "apply_template", "set_venue", "add_stage",
-				"add_stand", "add_tables", "add_area", "add_playing_surface", "update_object", "move_objects",
+				"add_stand", "add_deck", "add_tables", "add_area", "add_playing_surface", "update_object", "move_objects",
 				"remove_objects", "upsert_ticket_category", "assign_category", "set_stage_image", "finish");
 	}
 

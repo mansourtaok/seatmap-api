@@ -368,6 +368,55 @@
   }
  },
  {
+  "name": "add_deck",
+  "description": "Add a sloped seating deck: one inclined platform (a grandstand on scaffolding, a raked floor) that the stands placed on it sit on, so their zones, aisles and walkways share one continuous slope. Its front edge, the low one, is its top edge before rotation; it rises towards its back edge. Stands whose middle is on the deck take their heights from it.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "ref": {
+     "type": "string",
+     "description": "Name for the new object so later calls can refer to it, like \"new:grandstand\" (lowercase letters, digits, dashes)."
+    },
+    "name": {
+     "type": "string"
+    },
+    "x": {
+     "type": "number"
+    },
+    "y": {
+     "type": "number"
+    },
+    "width": {
+     "type": "number",
+     "description": "Meters along its front edge."
+    },
+    "height": {
+     "type": "number",
+     "description": "Meters from its front edge to its back edge."
+    },
+    "rotation": {
+     "type": "number",
+     "description": "0: front edge on top, rising downwards (away from a stage above it)."
+    },
+    "slopePercent": {
+     "type": "number",
+     "description": "Rise per meter in percent: 20 means 0.2 m higher per meter back (about 11°)."
+    },
+    "elevation": {
+     "type": "number",
+     "description": "Height of the front edge in meters; default on the floor."
+    }
+   },
+   "required": [
+    "x",
+    "y",
+    "width",
+    "height",
+    "slopePercent"
+   ]
+  }
+ },
+ {
   "name": "add_tables",
   "description": "Add a grid of tables with chairs; x/y is the grid's center. With ref R the tables are R-1, R-2… and R means all of them.",
   "input_schema": {
@@ -649,6 +698,10 @@
     "rake": {
      "type": "number",
      "description": "Stands only: how many meters higher each row is than the one in front. Default 0.4 (about 27° at 0.8 m row spacing); 0 is flat."
+    },
+    "slopePercent": {
+     "type": "number",
+     "description": "Sloped decks only: their slope in percent."
     }
    },
    "required": [

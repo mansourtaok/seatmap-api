@@ -19,15 +19,15 @@ final class LayoutDocumentValidator {
 
 	/**
 	 * Newest document format this server understands. Version 4 only added optional heights
-	 * for the 3D view and version 5 optional per-block stand sizes, so version 3 documents are
-	 * still accepted as they are.
+	 * for the 3D view, version 5 optional per-block stand sizes and stage pictures, and version 6
+	 * sloped decks (DECK), so version 3 documents are still accepted as they are.
 	 */
-	static final int SCHEMA_VERSION = 5;
+	static final int SCHEMA_VERSION = 6;
 
 	static final int OLDEST_SCHEMA_VERSION = 3;
 
 	static final Set<String> OBJECT_TYPES = Set.of("STAGE", "SHAPE", "TEXT", "TABLE_ROUND", "TABLE_RECT", "SEAT",
-			"SEAT_ROW", "SECTION", "STANDING_AREA", "PASSAGE", "WALL", "DOOR", "BOOTH", "PLAYING_SURFACE", "STAND");
+			"SEAT_ROW", "SECTION", "STANDING_AREA", "PASSAGE", "WALL", "DOOR", "BOOTH", "DECK", "PLAYING_SURFACE", "STAND");
 
 	/** Types that own seats through {@code seatIds}. */
 	static final Set<String> SEAT_OWNER_TYPES = Set.of("TABLE_ROUND", "TABLE_RECT", "SEAT_ROW", "STAND");

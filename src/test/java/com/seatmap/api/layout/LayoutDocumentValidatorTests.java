@@ -28,9 +28,9 @@ class LayoutDocumentValidatorTests {
 		assertThat(LayoutDocumentValidator.validate(document)).singleElement()
 			.asString()
 			.contains("Schema version 2 is not supported");
-		assertThat(LayoutDocumentValidator.validate(document.put("schemaVersion", 6))).singleElement()
+		assertThat(LayoutDocumentValidator.validate(document.put("schemaVersion", 7))).singleElement()
 			.asString()
-			.contains("Schema version 6 is not supported");
+			.contains("Schema version 7 is not supported");
 	}
 
 	@Test
@@ -43,6 +43,26 @@ class LayoutDocumentValidatorTests {
 				((ObjectNode) object).put("elevation", 2.5).put("rake", 0.4);
 			}
 		}
+		assertThat(LayoutDocumentValidator.validate(stand)).isEmpty();
+
+		// Version 6: a sloped deck under the stands.
+		stand.put("schemaVersion", 6);
+		((tools.jackson.databind.node.ArrayNode) stand.get("objects")).addObject()
+			.put("id", "deck-1")
+			.put("type", "DECK")
+			.put("name", "Grandstand")
+			.put("x", 10)
+			.put("y", 10)
+			.put("rotation", 0)
+			.put("locked", false)
+			.put("visible", true)
+			.put("width", 30)
+			.put("height", 15)
+			.put("slope", 0.2)
+			.putObject("style")
+			.put("fill", "#cbd5e1")
+			.put("stroke", "#64748b")
+			.put("strokeWidth", 1);
 		assertThat(LayoutDocumentValidator.validate(stand)).isEmpty();
 
 		// Version 5: per-block stand sizes.
