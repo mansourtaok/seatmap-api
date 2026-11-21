@@ -2,6 +2,7 @@ package com.seatmap.api.ai;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -17,12 +18,16 @@ import com.anthropic.errors.PermissionDeniedException;
 import com.anthropic.errors.RateLimitException;
 import com.anthropic.errors.UnauthorizedException;
 import com.anthropic.helpers.BetaMessageAccumulator;
+import com.anthropic.models.beta.messages.BetaBase64ImageSource;
+import com.anthropic.models.beta.messages.BetaBase64PdfSource;
 import com.anthropic.models.beta.messages.BetaCacheControlEphemeral;
 import com.anthropic.models.beta.messages.BetaContentBlock;
 import com.anthropic.models.beta.messages.BetaContentBlockParam;
+import com.anthropic.models.beta.messages.BetaImageBlockParam;
 import com.anthropic.models.beta.messages.BetaMessage;
 import com.anthropic.models.beta.messages.BetaOutputConfig;
 import com.anthropic.models.beta.messages.BetaRawMessageStreamEvent;
+import com.anthropic.models.beta.messages.BetaRequestDocumentBlock;
 import com.anthropic.models.beta.messages.BetaStopReason;
 import com.anthropic.models.beta.messages.BetaTextBlockParam;
 import com.anthropic.models.beta.messages.BetaTool;
@@ -48,6 +53,9 @@ import org.springframework.stereotype.Component;
  * <li>The fixed instructions are marked for prompt caching: repeated calls pay a tenth for them.</li>
  * <li>The call streams and is collected into the final message, so a long answer never hits an
  * HTTP timeout.</li>
+ * <li>Attached files open the conversation, in a message of their own before the history, with
+ * a cache mark after the last: they stay in view when old turns are dropped, and every later
+ * request of the conversation reads them from the cache.</li>
  * <li>Refusals fall back server-side to another model (beta {@code server-side-fallback}), so
  * an over-cautious decline on a harmless layout request is retried rather than shown.</li>
  * </ul>
@@ -77,8 +85,8 @@ class AnthropicModelClient implements AiModelClient, DisposableBean {
 	}
 
 	@Override
-	public ModelReply complete(String system, List<Turn> history, String userMessage, String toolsJson,
-			String finishTool) {
+	public ModelReply complete(String system, List<Attachment> attachments, List<Turn> history, String userMessage,
+			String toolsJson, String finishTool) {
 		MessageCreateParams.Builder params = MessageCreateParams.builder()
 			.model(this.properties.model())
 			.maxTokens(this.properties.maxTokens())
@@ -93,6 +101,10 @@ class AnthropicModelClient implements AiModelClient, DisposableBean {
 			.addBeta(FALLBACK_BETA)
 			.fallbacksDefault();
 		tools(toolsJson).forEach(params::addTool);
+		if (!attachments.isEmpty()) {
+			params.addUserMessageOfContentBlockParams(referenceFiles(attachments));
+			params.addAssistantMessage("I have the reference files and will use them for this venue.");
+		}
 		for (Turn turn : history) {
 			if (turn.role() == Turn.Role.USER) {
 				params.addUserMessage(turn.text());
@@ -138,6 +150,43 @@ class AnthropicModelClient implements AiModelClient, DisposableBean {
 				.toList());
 		}
 		return new ModelReply(text.toString(), calls, ModelReply.Outcome.TRUNCATED, model, usage);
+	}
+
+	/**
+	 * The organizer's files, each introduced by its number and name so later turns can refer to
+	 * them ("the second photo"). The last carries the cache mark.
+	 */
+	static List<BetaContentBlockParam> referenceFiles(List<Attachment> attachments) {
+		List<BetaContentBlockParam> blocks = new ArrayList<>();
+		blocks.add(BetaContentBlockParam.ofText(
+				"The organizer attached these reference files for the venue in this conversation:"));
+		for (int i = 0; i < attachments.size(); i++) {
+			Attachment attachment = attachments.get(i);
+			boolean last = i == attachments.size() - 1;
+			String data = Base64.getEncoder().encodeToString(attachment.data());
+			blocks.add(BetaContentBlockParam.ofText("File %d: %s".formatted(i + 1, attachment.name())));
+			if (attachment.isPdf()) {
+				BetaRequestDocumentBlock.Builder document = BetaRequestDocumentBlock.builder()
+					.source(BetaBase64PdfSource.builder().data(data).build())
+					.title(attachment.name());
+				if (last) {
+					document.cacheControl(BetaCacheControlEphemeral.builder().build());
+				}
+				blocks.add(BetaContentBlockParam.ofDocument(document.build()));
+			}
+			else {
+				BetaImageBlockParam.Builder image = BetaImageBlockParam.builder()
+					.source(BetaBase64ImageSource.builder()
+						.mediaType(BetaBase64ImageSource.MediaType.of(attachment.mediaType()))
+						.data(data)
+						.build());
+				if (last) {
+					image.cacheControl(BetaCacheControlEphemeral.builder().build());
+				}
+				blocks.add(BetaContentBlockParam.ofImage(image.build()));
+			}
+		}
+		return blocks;
 	}
 
 	@SuppressWarnings("unchecked")

@@ -25,7 +25,7 @@
  },
  {
   "name": "apply_template",
-  "description": "Replace the whole layout with a generated sports venue (stands, VIP areas, exits included). Use when no exact capacity is asked for.",
+  "description": "Replace the whole layout with a generated sports venue (stands, VIP areas, exits included). Use when no exact capacity is asked for, or to reproduce an arena from photos whose seating wraps around the court.",
   "input_schema": {
    "type": "object",
    "properties": {
@@ -48,19 +48,24 @@
        "enum": [
         "stands",
         "bowl"
-       ]
+       ],
+       "description": "\"stands\": separate stands along the sides and ends, corners left open. \"bowl\": one continuous ring of seating around the court that curves through the four corners, with an upper ring behind a walkway when upperTier is on, like most indoor arenas."
       },
       "lowerRows": {
-       "type": "integer"
+       "type": "integer",
+       "description": "Rows in the lower ring (or the lower stands)."
       },
       "upperRows": {
-       "type": "integer"
+       "type": "integer",
+       "description": "Rows in the upper ring, when upperTier is on."
       },
       "upperTier": {
-       "type": "boolean"
+       "type": "boolean",
+       "description": "A second, higher ring (or tier) of seating behind the lower one."
       },
       "courtside": {
-       "type": "boolean"
+       "type": "boolean",
+       "description": "Seats on the floor right beside the court."
       },
       "vipAreas": {
        "type": "boolean"
@@ -307,6 +312,23 @@
     },
     "blockPrefix": {
      "type": "string"
+    },
+    "blockSizes": {
+     "type": "array",
+     "description": "Straight stands only, when its blocks are not all the same size: one entry per block, first block first, each with the rowsPerBlock and/or seatsPerRow where that block differs from the stand's; {} for a block of the stand's size. Blocks line up at the front row. An empty list makes every block the stand's size again.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "rowsPerBlock": {
+        "type": "integer"
+       },
+       "seatsPerRow": {
+        "type": "integer"
+       }
+      },
+      "required": [],
+      "additionalProperties": false
+     }
     },
     "curve": {
      "type": "object",
@@ -577,6 +599,23 @@
       },
       "firstRowLabel": {
        "type": "string"
+      },
+      "blockSizes": {
+       "type": "array",
+       "description": "Straight stands only, when its blocks are not all the same size: one entry per block, first block first, each with the rowsPerBlock and/or seatsPerRow where that block differs from the stand's; {} for a block of the stand's size. Blocks line up at the front row. An empty list makes every block the stand's size again.",
+       "items": {
+        "type": "object",
+        "properties": {
+         "rowsPerBlock": {
+          "type": "integer"
+         },
+         "seatsPerRow": {
+          "type": "integer"
+         }
+        },
+        "required": [],
+        "additionalProperties": false
+       }
       }
      },
      "required": [],
@@ -721,6 +760,31 @@
     "category"
    ],
    "additionalProperties": false
+  }
+ },
+ {
+  "name": "set_stage_image",
+  "description": "Show an attached image (a photo or render of the stage) as the stage's picture in the 3D view: it stands upright along the stage's back edge, as wide as the stage, facing the stage's front. Images only, not PDFs.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "target": {
+     "type": "string",
+     "description": "The stage: its handle, or the ref of a stage added in this response."
+    },
+    "file": {
+     "type": "integer",
+     "description": "The attached file's number, as listed: File 1 is the first."
+    },
+    "height": {
+     "type": "number",
+     "description": "Picture height in meters. Leave it out to keep the image's own proportions at the stage's width."
+    }
+   },
+   "required": [
+    "target",
+    "file"
+   ]
   }
  },
  {

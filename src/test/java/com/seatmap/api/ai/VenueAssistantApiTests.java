@@ -1,18 +1,30 @@
 package com.seatmap.api.ai;
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Supplier;
+
+import javax.imageio.ImageIO;
 
 import com.seatmap.api.TestAccounts;
 import com.seatmap.api.TestAccounts.Staff;
+import com.anthropic.models.beta.messages.BetaContentBlockParam;
+import com.seatmap.api.ai.AiModelClient.Attachment;
 import com.seatmap.api.ai.AiModelClient.ModelReply;
 import com.seatmap.api.ai.AiModelClient.TokenUsage;
 import com.seatmap.api.ai.AiModelClient.ToolCall;
 import com.seatmap.api.ai.AiModelClient.Turn;
 import com.seatmap.api.layout.TestDocuments;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
@@ -27,13 +39,17 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.seatmap.api.TestAccounts.as;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,7 +59,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * real model is exercised separately, on request, since every call is billed.
  */
 @SpringBootTest(properties = { "seatmap.ai.enabled=true", "seatmap.ai.requests-per-minute=5",
-		"seatmap.ai.monthly-allowance=1.00" })
+		"seatmap.ai.monthly-allowance=1.00", "seatmap.ai.attachments.max-per-conversation=3",
+		"seatmap.ai.attachments.max-image-size=100KB", "seatmap.ai.attachments.max-pdf-pages=2" })
 @AutoConfigureMockMvc
 class VenueAssistantApiTests {
 
@@ -62,6 +79,9 @@ class VenueAssistantApiTests {
 
 	@Autowired
 	private FakeModel model;
+
+	@Autowired
+	private AiAttachments attachments;
 
 	private Staff alice;
 
@@ -224,7 +244,181 @@ class VenueAssistantApiTests {
 		// The designer's operations (ai-contract.ts), as tool names.
 		assertThat(names).containsExactlyInAnyOrder("new_venue", "apply_template", "set_venue", "add_stage",
 				"add_stand", "add_tables", "add_area", "add_playing_surface", "update_object", "move_objects",
-				"remove_objects", "upsert_ticket_category", "assign_category", "finish");
+				"remove_objects", "upsert_ticket_category", "assign_category", "set_stage_image", "finish");
+	}
+
+	@Test
+	void showsAttachedPhotosAndPlansToTheModelInTheOrderGiven() throws Exception {
+		String photo = id(attach(this.alice, "conv-1", "north stand.png", png(40, 30)).andExpect(status().isCreated())
+			.andExpect(jsonPath("$.name").value("north stand.png"))
+			.andExpect(jsonPath("$.mediaType").value("image/png"))
+			.andExpect(jsonPath("$.pages").doesNotExist()));
+		// The browser's claimed type and the extension don't matter: the content says PDF.
+		String plan = id(attach(this.alice, "conv-1", "C:\\plans\\seating.bin", pdf(2)).andExpect(status().isCreated())
+			.andExpect(jsonPath("$.name").value("seating.bin"))
+			.andExpect(jsonPath("$.mediaType").value("application/pdf"))
+			.andExpect(jsonPath("$.pages").value(2)));
+
+		chat(this.alice, request("Build it from these", List.of(), List.of(plan, photo))).andExpect(status().isOk());
+
+		List<Attachment> sent = this.model.calls.getFirst().attachments();
+		assertThat(sent).extracting(Attachment::name).containsExactly("seating.bin", "north stand.png");
+		assertThat(sent).extracting(Attachment::mediaType).containsExactly("application/pdf", "image/png");
+		assertThat(sent.get(1).data()).isEqualTo(png(40, 30));
+
+		// Without files, nothing extra is sent.
+		chat(this.alice, request("Add a stage", List.of())).andExpect(status().isOk());
+		assertThat(this.model.calls.get(1).attachments()).isEmpty();
+	}
+
+	@Test
+	void refusesFilesThatAreNotImagesOrPdfsOrTooLarge() throws Exception {
+		attach(this.alice, "conv-1", "photo.jpg", "not really a photo".getBytes()).andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.detail").value("\"photo.jpg\" isn't a JPEG, PNG, WebP or GIF image or a PDF"));
+		// 100 KB limit in this test; noise doesn't compress.
+		attach(this.alice, "conv-1", "huge.png", noisyPng(300, 300)).andExpect(status().isContentTooLarge());
+		attach(this.alice, "conv-1", "wide.png", png(AiAttachments.MAX_IMAGE_SIDE + 1, 1))
+			.andExpect(status().isBadRequest());
+		attach(this.alice, "conv-1", "brochure.pdf", pdf(3)).andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.detail").value(containsString("has 3 pages")));
+		assertThat(this.jdbc.queryForObject("SELECT count(*) FROM ai_attachment", Integer.class)).isZero();
+	}
+
+	@Test
+	void limitsFilesPerConversation() throws Exception {
+		for (int i = 0; i < 3; i++) {
+			attach(this.alice, "conv-1", "p" + i + ".png", png(10, 10)).andExpect(status().isCreated());
+		}
+		attach(this.alice, "conv-1", "p3.png", png(10, 10)).andExpect(status().isBadRequest());
+		// A new chat starts again.
+		attach(this.alice, "conv-2", "p3.png", png(10, 10)).andExpect(status().isCreated());
+	}
+
+	@Test
+	void keepsFilesToTheirOwnerAndConversation() throws Exception {
+		String photo = id(attach(this.alice, "conv-1", "a.png", png(10, 10)));
+		Staff bob = TestAccounts.staff(this.jdbc, "Bob", "EDITOR");
+
+		chat(bob, request("Use this", List.of(), List.of(photo))).andExpect(status().isBadRequest());
+		chat(this.alice, request("Use this", List.of(), List.of(photo)).replace("conv-1", "conv-2"))
+			.andExpect(status().isBadRequest());
+		this.mvc.perform(delete("/api/ai/venue-assistant/attachments/" + photo).with(as(bob.user())).with(csrf()))
+			.andExpect(status().isNotFound());
+		assertThat(this.model.calls).isEmpty();
+
+		this.mvc.perform(delete("/api/ai/venue-assistant/attachments/" + photo).with(as(this.alice.user())).with(csrf()))
+			.andExpect(status().isNoContent());
+		chat(this.alice, request("Use this", List.of(), List.of(photo))).andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.detail").value(containsString("no longer available")));
+	}
+
+	@Test
+	void attachingNeedsTheEditorRole() throws Exception {
+		attach(TestAccounts.staff(this.jdbc, "Vera", "VIEWER"), "conv-1", "a.png", png(10, 10))
+			.andExpect(status().isForbidden());
+	}
+
+	@Test
+	void deletesFilesAfterTheRetentionPeriod() throws Exception {
+		String old = id(attach(this.alice, "conv-1", "old.png", png(10, 10)));
+		attach(this.alice, "conv-1", "new.png", png(10, 10));
+		this.jdbc.update("UPDATE ai_attachment SET created_at = now() - interval '25 hours' WHERE id = ?::uuid", old);
+
+		assertThat(this.attachments.deleteExpired(Instant.now())).isEqualTo(1);
+		assertThat(this.jdbc.queryForList("SELECT file_name FROM ai_attachment", String.class)).containsExactly("new.png");
+	}
+
+	@Test
+	void marksOnlyTheLastFileForCaching() {
+		List<BetaContentBlockParam> blocks = AnthropicModelClient.referenceFiles(List.of(
+				new Attachment("a.png", "image/png", png(10, 10)), new Attachment("plan.pdf", "application/pdf", pdf(1))));
+		assertThat(blocks).hasSize(5);
+		assertThat(blocks.get(1).text().orElseThrow().text()).isEqualTo("File 1: a.png");
+		assertThat(blocks.get(2).image().orElseThrow().cacheControl()).isEmpty();
+		assertThat(blocks.get(3).text().orElseThrow().text()).isEqualTo("File 2: plan.pdf");
+		assertThat(blocks.get(4).document().orElseThrow().cacheControl()).isPresent();
+		assertThat(blocks.get(4).document().orElseThrow().title()).contains("plan.pdf");
+	}
+
+	/** The JSON the SDK sends for the files, as the Messages API documents it (a mistake would only show as a 400). */
+	@Test
+	void sendsFilesInTheShapeTheMessagesApiExpects() throws Exception {
+		byte[] image = png(10, 10);
+		List<BetaContentBlockParam> blocks = AnthropicModelClient.referenceFiles(
+				List.of(new Attachment("a.png", "image/png", image), new Attachment("plan.pdf", "application/pdf", pdf(1))));
+		com.fasterxml.jackson.databind.JsonNode json = com.anthropic.core.ObjectMappers.jsonMapper().valueToTree(blocks);
+
+		assertThat(json.get(2).get("type").asText()).isEqualTo("image");
+		assertThat(json.get(2).at("/source/type").asText()).isEqualTo("base64");
+		assertThat(json.get(2).at("/source/media_type").asText()).isEqualTo("image/png");
+		assertThat(java.util.Base64.getDecoder().decode(json.get(2).at("/source/data").asText())).isEqualTo(image);
+		assertThat(json.get(2).has("cache_control")).isFalse();
+
+		assertThat(json.get(4).get("type").asText()).isEqualTo("document");
+		assertThat(json.get(4).at("/source/type").asText()).isEqualTo("base64");
+		assertThat(json.get(4).at("/source/media_type").asText()).isEqualTo("application/pdf");
+		assertThat(json.get(4).at("/cache_control/type").asText()).isEqualTo("ephemeral");
+		assertThat(json.get(4).get("title").asText()).isEqualTo("plan.pdf");
+	}
+
+	@Test
+	void cleansFileNames() {
+		assertThat(AiAttachments.cleanName("../../etc/passwd")).isEqualTo("passwd");
+		assertThat(AiAttachments.cleanName("a\u0000b\nc.png")).isEqualTo("abc.png");
+		assertThat(AiAttachments.cleanName("  ")).isEqualTo("file");
+		assertThat(AiAttachments.cleanName("x".repeat(300))).hasSize(120);
+	}
+
+	private ResultActions attach(Staff staff, String conversationId, String name, byte[] data) throws Exception {
+		return this.mvc.perform(multipart("/api/ai/venue-assistant/attachments")
+			.file(new MockMultipartFile("file", name, "application/octet-stream", data))
+			.param("conversationId", conversationId)
+			.with(as(staff.user()))
+			.with(csrf()));
+	}
+
+	private static String id(ResultActions attached) throws Exception {
+		return JSON.readTree(attached.andReturn().getResponse().getContentAsString()).get("id").asString();
+	}
+
+	private static byte[] png(int width, int height) {
+		return encode(new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB));
+	}
+
+	private static byte[] noisyPng(int width, int height) {
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+		Random random = new Random(1);
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				image.setRGB(x, y, random.nextInt());
+			}
+		}
+		return encode(image);
+	}
+
+	private static byte[] encode(BufferedImage image) {
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ImageIO.write(image, "png", out);
+			return out.toByteArray();
+		}
+		catch (IOException ex) {
+			throw new UncheckedIOException(ex);
+		}
+	}
+
+	private static byte[] pdf(int pages) {
+		try (PDDocument document = new PDDocument()) {
+			for (int i = 0; i < pages; i++) {
+				document.addPage(new PDPage());
+			}
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			document.save(out);
+			return out.toByteArray();
+		}
+		catch (IOException ex) {
+			throw new UncheckedIOException(ex);
+		}
 	}
 
 	private ResultActions chat(Staff staff, String body) throws Exception {
@@ -240,7 +434,13 @@ class VenueAssistantApiTests {
 				history));
 	}
 
-	record Call(String system, List<Turn> history, String userMessage, String tools) {
+	private static String request(String prompt, List<Map<String, String>> history, List<String> attachmentIds) {
+		return JSON.writeValueAsString(Map.of("conversationId", "conv-1", "prompt", prompt, "venue",
+				Map.of("venue", Map.of("name", "Hall", "width", 40, "height", 25), "objects", List.of()), "history",
+				history, "attachmentIds", attachmentIds));
+	}
+
+	record Call(String system, List<Attachment> attachments, List<Turn> history, String userMessage, String tools) {
 	}
 
 	/** Stands in for Claude: records what it was asked and answers with {@code reply}. */
@@ -257,9 +457,9 @@ class VenueAssistantApiTests {
 		}
 
 		@Override
-		public ModelReply complete(String system, List<Turn> history, String userMessage, String toolsJson,
-				String finishTool) {
-			this.calls.add(new Call(system, history, userMessage, toolsJson));
+		public ModelReply complete(String system, List<Attachment> attachments, List<Turn> history,
+				String userMessage, String toolsJson, String finishTool) {
+			this.calls.add(new Call(system, attachments, history, userMessage, toolsJson));
 			return this.reply.get();
 		}
 

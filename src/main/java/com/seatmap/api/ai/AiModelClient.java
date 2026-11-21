@@ -15,6 +15,8 @@ interface AiModelClient {
 	 * in order, are the answer. If the model stops before calling {@code finishTool}, it is told
 	 * its calls were recorded and continues, for a few rounds at most.
 	 * @param system the fixed instructions
+	 * @param attachments the conversation's reference files (photos, plans), in the order they
+	 * were attached; shown before the history, so they stay in view however long the chat gets
 	 * @param history earlier turns, oldest first
 	 * @param userMessage this turn's message
 	 * @param toolsJson the tool definitions, as a JSON array of {@code name}, {@code description}, {@code input_schema}
@@ -22,7 +24,22 @@ interface AiModelClient {
 	 * @throws AiUnavailableException when the model can't be reached or fails
 	 * @throws com.seatmap.api.web.TooManyRequestsException when the provider is rate limiting us
 	 */
-	ModelReply complete(String system, List<Turn> history, String userMessage, String toolsJson, String finishTool);
+	ModelReply complete(String system, List<Attachment> attachments, List<Turn> history, String userMessage,
+			String toolsJson, String finishTool);
+
+	/**
+	 * A file the organizer attached.
+	 * @param name its file name, as the organizer knows it
+	 * @param mediaType {@code image/jpeg}, {@code image/png}, {@code image/gif}, {@code image/webp} or {@code application/pdf}
+	 * @param data its bytes
+	 */
+	record Attachment(String name, String mediaType, byte[] data) {
+
+		boolean isPdf() {
+			return "application/pdf".equals(this.mediaType);
+		}
+
+	}
 
 	record Turn(Role role, String text) {
 

@@ -53,6 +53,10 @@ public class VenueAssistantService {
 
 	private final RateLimiter rateLimiter;
 
+	private final AiAttachments attachments;
+
+	private final RateLimiter uploadLimiter;
+
 	private final String systemPrompt = resource("ai/venue-assistant-system.md");
 
 	private final String tools = resource("ai/venue-assistant-tools.json");
@@ -61,7 +65,7 @@ public class VenueAssistantService {
 	private static final String FINISH_TOOL = "finish";
 
 	VenueAssistantService(AiModelClient model, AiAccess aiAccess, AiAllowance allowance, Access access, AiUsageRecorder usage,
-			AiProperties properties, JsonMapper jsonMapper) {
+			AiProperties properties, JsonMapper jsonMapper, AiAttachments attachments) {
 		this.model = model;
 		this.aiAccess = aiAccess;
 		this.allowance = allowance;
@@ -70,6 +74,8 @@ public class VenueAssistantService {
 		this.properties = properties;
 		this.jsonMapper = jsonMapper;
 		this.rateLimiter = new RateLimiter(properties.requestsPerMinute(), Duration.ofMinutes(1));
+		this.attachments = attachments;
+		this.uploadLimiter = new RateLimiter(properties.attachments().uploadsPerMinute(), Duration.ofMinutes(1));
 	}
 
 	public record ChatTurn(String role, String text) {
@@ -84,10 +90,30 @@ public class VenueAssistantService {
 		return new Usage(usage.percent(), usage.resetsAt());
 	}
 
-	public JsonNode chat(String conversationId, UUID layoutId, String prompt, JsonNode venue, List<ChatTurn> history) {
+	/**
+	 * Keeps a photo or PDF for the conversation, after checking it (see {@link AiAttachments}).
+	 * Nothing is sent to Claude yet: that happens with each chat request that lists its id.
+	 */
+	public AiAttachments.Info attach(String conversationId, UUID layoutId, String fileName, byte[] data) {
+		UUID organizationId = this.aiAccess.requireOrganization(layoutId);
+		UUID userId = this.access.requireUser().id();
+		this.uploadLimiter.acquire(userId.toString(), "Too many files at once; wait a moment and try again");
+		return this.attachments.store(organizationId, userId, conversationId, fileName, data);
+	}
+
+	public void detach(UUID attachmentId) {
+		this.attachments.delete(this.access.requireUser().id(), attachmentId);
+	}
+
+	/**
+	 * @param attachmentIds the conversation's files so far, in the order they were attached
+	 */
+	public JsonNode chat(String conversationId, UUID layoutId, String prompt, JsonNode venue, List<ChatTurn> history,
+			List<UUID> attachmentIds) {
 		UUID organizationId = this.aiAccess.requireOrganization(layoutId);
 		UUID userId = this.access.requireUser().id();
 		this.allowance.requireAvailable(organizationId);
+		List<AiModelClient.Attachment> files = this.attachments.find(userId, conversationId, attachmentIds);
 		String venueJson = this.jsonMapper.writeValueAsString(venue);
 		long size = venueJson.length() + prompt.length() + history.stream().mapToLong((t) -> t.text().length()).sum();
 		if (size > this.properties.maxRequestSize().toBytes()) {
@@ -108,7 +134,7 @@ public class VenueAssistantService {
 		Instant start = Instant.now();
 		ModelReply reply;
 		try {
-			reply = this.model.complete(this.systemPrompt, turns, userMessage, this.tools, FINISH_TOOL);
+			reply = this.model.complete(this.systemPrompt, files, turns, userMessage, this.tools, FINISH_TOOL);
 		}
 		catch (RuntimeException ex) {
 			record(organizationId, userId, conversationId, layoutId, this.properties.model(), TokenUsage.NONE, start,
@@ -129,6 +155,7 @@ public class VenueAssistantService {
 			}
 			case COMPLETE -> {
 				JsonNode answer = answer(reply);
+				log(conversationId, reply, answer);
 				record(organizationId, userId, conversationId, layoutId, reply.model(), reply.usage(), start,
 						statusOf(answer), null);
 				return answer;
@@ -174,6 +201,20 @@ public class VenueAssistantService {
 		answer.set("warnings", (finish != null && finish.path("warnings").isArray()) ? finish.get("warnings")
 				: this.jsonMapper.createArrayNode());
 		return answer;
+	}
+
+	/**
+	 * One line per answer (status, how many of each operation, tokens), and the whole answer at
+	 * DEBUG, so an answer the designer can't use can be looked at afterwards.
+	 */
+	private void log(String conversationId, ModelReply reply, JsonNode answer) {
+		java.util.Map<String, Long> counts = new java.util.TreeMap<>();
+		answer.path("operations").forEach((op) -> counts.merge(op.path("op").asString(), 1L, Long::sum));
+		logger.info("Assistant answer, conversation {}: {} with {} operations {}, {} output tokens", conversationId,
+				answer.path("status").asString(), answer.path("operations").size(), counts, reply.usage().output());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Assistant answer, conversation {}: {}", conversationId, answer);
+		}
 	}
 
 	private static void copy(JsonNode from, ObjectNode to, String field) {
