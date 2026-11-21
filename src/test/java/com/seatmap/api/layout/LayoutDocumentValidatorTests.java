@@ -28,19 +28,30 @@ class LayoutDocumentValidatorTests {
 		assertThat(LayoutDocumentValidator.validate(document)).singleElement()
 			.asString()
 			.contains("Schema version 2 is not supported");
-		assertThat(LayoutDocumentValidator.validate(document.put("schemaVersion", 5))).singleElement()
+		assertThat(LayoutDocumentValidator.validate(document.put("schemaVersion", 6))).singleElement()
 			.asString()
-			.contains("Schema version 5 is not supported");
+			.contains("Schema version 6 is not supported");
 	}
 
 	@Test
-	void acceptsVersion3AndVersion4WithHeights() {
+	void acceptsVersions3To5() {
 		ObjectNode stand = TestDocuments.stand();
 		assertThat(LayoutDocumentValidator.validate(stand.put("schemaVersion", 3))).isEmpty();
 		stand.put("schemaVersion", 4);
 		for (var object : stand.get("objects")) {
 			if ("STAND".equals(object.get("type").asString())) {
 				((ObjectNode) object).put("elevation", 2.5).put("rake", 0.4);
+			}
+		}
+		assertThat(LayoutDocumentValidator.validate(stand)).isEmpty();
+
+		// Version 5: per-block stand sizes.
+		stand.put("schemaVersion", 5);
+		for (var object : stand.get("objects")) {
+			if ("STAND".equals(object.get("type").asString())) {
+				ObjectNode seating = (object.get("seating") instanceof ObjectNode existing) ? existing
+						: ((ObjectNode) object).putObject("seating");
+				seating.putArray("blockSizes").addObject().put("seatsPerRow", 7);
 			}
 		}
 		assertThat(LayoutDocumentValidator.validate(stand)).isEmpty();
@@ -100,6 +111,22 @@ class LayoutDocumentValidatorTests {
 		document.putObject("background").put("assetId", "img-1");
 		assertThat(LayoutDocumentValidator.validate(document))
 			.containsExactly("The floor plan uses asset \"img-1\", which isn't listed in assets");
+	}
+
+	@Test
+	void checksThatAStagePictureIsAnAsset() {
+		ObjectNode document = TestDocuments.load("small-theater");
+		ObjectNode stage = (ObjectNode) document.get("objects").values().stream()
+			.filter((object) -> "STAGE".equals(object.get("type").asString()))
+			.findFirst()
+			.orElseThrow();
+		stage.putObject("image").put("assetId", "stage-photo").put("height", 6);
+		assertThat(LayoutDocumentValidator.validate(document)).singleElement()
+			.asString()
+			.contains("shows asset \"stage-photo\", which isn't listed in assets");
+
+		((ObjectNode) document.get("assets")).putObject("stage-photo").put("id", "stage-photo");
+		assertThat(LayoutDocumentValidator.validate(document)).isEmpty();
 	}
 
 	@Test

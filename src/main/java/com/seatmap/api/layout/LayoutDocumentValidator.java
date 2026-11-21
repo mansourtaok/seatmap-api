@@ -19,9 +19,10 @@ final class LayoutDocumentValidator {
 
 	/**
 	 * Newest document format this server understands. Version 4 only added optional heights
-	 * for the 3D view, so version 3 documents are still accepted as they are.
+	 * for the 3D view and version 5 optional per-block stand sizes, so version 3 documents are
+	 * still accepted as they are.
 	 */
-	static final int SCHEMA_VERSION = 4;
+	static final int SCHEMA_VERSION = 5;
 
 	static final int OLDEST_SCHEMA_VERSION = 3;
 
@@ -82,6 +83,7 @@ final class LayoutDocumentValidator {
 			checkObject(object, objectsById, categoryIds, problems);
 		}
 		checkBackground(document, problems);
+		checkStageImages(document, objectsById, problems);
 		return problems.list();
 	}
 
@@ -207,6 +209,20 @@ final class LayoutDocumentValidator {
 		JsonNode assetId = background.get("assetId");
 		if (!isString(assetId) || !document.get("assets").has(assetId.asString())) {
 			problems.add("The floor plan uses asset " + assetId + ", which isn't listed in assets");
+		}
+	}
+
+	/** A stage's picture (shown in 3D) must be one of the layout's assets, like the floor plan. */
+	private static void checkStageImages(JsonNode document, Map<String, JsonNode> objectsById, Problems problems) {
+		for (JsonNode object : objectsById.values()) {
+			JsonNode image = object.get("image");
+			if (!"STAGE".equals(object.path("type").asString()) || image == null || image.isNull()) {
+				continue;
+			}
+			JsonNode assetId = image.get("assetId");
+			if (!isString(assetId) || !document.get("assets").has(assetId.asString())) {
+				problems.add("Stage " + object.get("id") + " shows asset " + assetId + ", which isn't listed in assets");
+			}
 		}
 	}
 
